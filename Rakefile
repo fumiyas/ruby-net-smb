@@ -1,6 +1,10 @@
-require 'bundler/gem_tasks'
-require 'rake/testtask'
+begin
+  require 'bundler/gem_tasks'
+rescue LoadError => e
+  p e
+end
 require 'rake/clean'
+require 'rake/testtask'
 
 Rake::TestTask.new
 
