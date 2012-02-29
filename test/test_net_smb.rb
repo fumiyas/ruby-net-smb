@@ -11,6 +11,10 @@ class SMBTest < Test::Unit::TestCase
   end
 
   def test_all
+    smbcctx = Net::SMBCCTX.new
+    p smbcctx.debug
+    smbcctx.debug = 5
+    p smbcctx.debug
   end
 end
 
