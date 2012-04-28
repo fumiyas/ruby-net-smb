@@ -1,0 +1,11 @@
+#!/usr/bin/ruby
+
+Process.setsid
+
+exec(
+  $ENV['TEST_SMBD'],
+  "--configfile=#{$ENV['TEST_SMB_CONF']}",
+  "--debuglevel=#{$ENV['TEST_SMBD_DEBUGLEVEL']}",
+  "--log-basename=#{$ENV['TEST_SMBD_LOG_DIR']}/smbd.log",
+);
+

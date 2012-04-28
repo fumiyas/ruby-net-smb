@@ -10,6 +10,8 @@ Rake::TestTask.new
 
 CLEAN.include('ext/**/*.{log,o,so}')
 CLEAN.include('ext/**/Makefile')
+CLEAN.include('test/log')
+CLEAN.include('test/log.[0-9]')
 CLOBBER.include('lib/**/*.so')
 
 EXT_PATH = 'net/smb'
