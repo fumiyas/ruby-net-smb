@@ -9,12 +9,12 @@ struct smbcctx {
 #define FALSE_P(value)  (NIL_P(value) || (value) == Qfalse)
 #define TRUE_P(value)   !FALSE_P(value)
 
-#define bool2value(b)   ((b) ? Qtrue : Qfalse)
-#define value2bool(v)   ((b) ? Qtrue : Qfalse)
+#define BOOL2VALUE(b)   ((b) ? Qtrue : Qfalse)
+#define VALUE2BOOL(v)   ((b) ? Qtrue : Qfalse)
 
-#define get_smbcctx(self) \
-  struct smbcctx *smbcctx; \
-  Data_Get_Struct((self), struct smbcctx, smbcctx);
+#define SMBCCTX_DECLARE_FROM_SELF(self, cctx) \
+  struct smbcctx *cctx; \
+  Data_Get_Struct(self, struct smbcctx, cctx);
 
 static VALUE eRuntimeError;
 
@@ -49,42 +49,42 @@ static VALUE rb_smbcctx_alloc(VALUE klass)
 
 static VALUE rb_smbcctx_initialize(VALUE self)
 {
-  get_smbcctx(self);
+  SMBCCTX_DECLARE_FROM_SELF(self, cctx);
 
-  smbc_setDebug(smbcctx->ctx, 0);
-  smbc_setOptionDebugToStderr(smbcctx->ctx, (smbc_bool)1);
+  smbc_setDebug(cctx->ctx, 0);
+  smbc_setOptionDebugToStderr(cctx->ctx, (smbc_bool)1);
 
   return self;
 }
 
 static VALUE rb_smbcctx_debug_get(VALUE self)
 {
-  get_smbcctx(self);
+  SMBCCTX_DECLARE_FROM_SELF(self, cctx);
 
-  return INT2NUM(smbc_getDebug(smbcctx->ctx));
+  return INT2NUM(smbc_getDebug(cctx->ctx));
 }
 
 static VALUE rb_smbcctx_debug_set(VALUE self, VALUE debug)
 {
-  get_smbcctx(self);
+  SMBCCTX_DECLARE_FROM_SELF(self, cctx);
 
-  smbc_setDebug(smbcctx->ctx, NUM2INT(debug));
+  smbc_setDebug(cctx->ctx, NUM2INT(debug));
 
   return debug;
 }
 
 static VALUE rb_smbcctx_use_kerberos_get(VALUE self)
 {
-  get_smbcctx(self);
+  SMBCCTX_DECLARE_FROM_SELF(self, cctx);
 
-  return smbc_getOptionUseKerberos(smbcctx->ctx) ? Qtrue : Qfalse;
+  return smbc_getOptionUseKerberos(cctx->ctx) ? Qtrue : Qfalse;
 }
 
 static VALUE rb_smbcctx_use_kerberos_set(VALUE self, VALUE flag)
 {
-  get_smbcctx(self);
+  SMBCCTX_DECLARE_FROM_SELF(self, cctx);
 
-  smbc_setOptionUseKerberos(smbcctx->ctx, (smbc_bool)(TRUE_P(flag) ? 1 : 0));
+  smbc_setOptionUseKerberos(cctx->ctx, (smbc_bool)(TRUE_P(flag) ? 1 : 0));
 
   return flag;
 }
@@ -94,13 +94,15 @@ static VALUE rb_smbcctx_use_kerberos_set(VALUE self, VALUE flag)
 void Init_smb(void)
 {
   VALUE rb_mNet = rb_define_module("Net");
-  VALUE rb_mSMB = rb_define_module_under(rb_mNet, "SMB");
-  VALUE rb_cSMBCCTX = rb_define_class_under(rb_mNet, "SMBCCTX", rb_cObject);
+  VALUE rb_cSMB = rb_define_class_under(rb_mNet, "SMB", rb_cObject);
+  VALUE rb_cSMBCCTX = rb_define_class_under(rb_cSMB, "CCTX", rb_cObject);
 
   rb_define_alloc_func(rb_cSMBCCTX, rb_smbcctx_alloc);
   rb_define_method(rb_cSMBCCTX, "initialize", rb_smbcctx_initialize, 0);
   rb_define_method(rb_cSMBCCTX, "debug", rb_smbcctx_debug_get, 0);
   rb_define_method(rb_cSMBCCTX, "debug=", rb_smbcctx_debug_set, 1);
+  rb_define_method(rb_cSMBCCTX, "use_kerberos", rb_smbcctx_use_kerberos_get, 0);
+  rb_define_method(rb_cSMBCCTX, "use_kerberos=", rb_smbcctx_use_kerberos_set, 1);
 
   //eRuntimeError = rb_define_class_under(mSMB, "Net::SMB::RuntimeError", rb_eRuntimeError);
 }
