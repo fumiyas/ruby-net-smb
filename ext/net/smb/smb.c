@@ -1,22 +1,25 @@
 #include <ruby.h>
 #include <libsmbclient.h>
 
-struct rb_smbcctx_data {
-  SMBCCTX       *smbcctx;
-  VALUE         auth_callback;
-};
-
 #define FALSE_P(value)  (NIL_P(value) || (value) == Qfalse)
 #define TRUE_P(value)   !FALSE_P(value)
 
 #define BOOL2VALUE(b)   ((b) ? Qtrue : Qfalse)
 #define VALUE2BOOL(v)   ((b) ? Qtrue : Qfalse)
 
+#define SMBCCTX_TRUE	((smbc_bool)1)
+#define SMBCCTX_FALSE	((smbc_bool)0)
+
+static VALUE rb_smb_eError;
+
+struct rb_smbcctx_data {
+  SMBCCTX       *smbcctx;
+  VALUE         auth_callback;
+};
+
 #define RB_SMBCCTX_DATA_FROM_SELF(self, data) \
   struct rb_smbcctx_data *data; \
   Data_Get_Struct(self, struct rb_smbcctx_data, data);
-
-static VALUE rb_smb_eError;
 
 /* ====================================================================== */
 
@@ -122,7 +125,7 @@ static VALUE rb_smbcctx_initialize(VALUE self)
 
   smbc_setDebug(data->smbcctx, 0);
   smbc_setOptionUserData(data->smbcctx, (void *)self);
-  smbc_setOptionDebugToStderr(data->smbcctx, (smbc_bool)1);
+  smbc_setOptionDebugToStderr(data->smbcctx, SMBCCTX_TRUE);
   smbc_setFunctionAuthDataWithContext(data->smbcctx, smbcctx_auth_fn);
 
   if (smbc_init_context(data->smbcctx) == NULL) {
@@ -159,7 +162,7 @@ static VALUE rb_smbcctx_use_kerberos_set(VALUE self, VALUE flag)
 {
   RB_SMBCCTX_DATA_FROM_SELF(self, data);
 
-  smbc_setOptionUseKerberos(data->smbcctx, (smbc_bool)(TRUE_P(flag) ? 1 : 0));
+  smbc_setOptionUseKerberos(data->smbcctx, TRUE_P(flag) ? SMBCCTX_TRUE : SMBCCTX_FALSE);
 
   return flag;
 }
