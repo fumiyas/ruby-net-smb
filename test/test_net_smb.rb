@@ -5,14 +5,17 @@ module Net
 
 class SMBTest < Test::Unit::TestCase
   def setup
-    ENV['LIBSMB_PROG'] ||= "test/bin/smbd.wrapper"
-    ENV['TEST_SMB_CONF'] ||= "test/etc/smb.conf"
-    ENV['TEST_SMBD'] ||= "smbd"
     ENV['TEST_SMBD_DEBUGLEVEL'] ||= "10"
     ENV['TEST_SMBD_LOG_DIR'] ||= "test/log"
     ENV['TEST_SMBD_VAR_DIR'] ||= ENV['TEST_SMBD_LOG_DIR'] + "/var"
     ENV['TEST_SMBD_SHARE_DIR'] ||= ENV['TEST_SMBD_LOG_DIR'] + "/share"
 
+    ENV['TEST_SMB_CONF'] ||= "test/etc/smb.conf"
+    ENV['TEST_SMBD'] ||= "smbd"
+    ENV['SMB_CONF_PATH'] = nil;
+    ENV['LIBSMB_PROG'] ||= "test/bin/smbd.wrapper"
+
+    ## Rotate log directory
     if File.exist?(ENV['TEST_SMBD_LOG_DIR'] + '.9')
       system('/bin/rm -rf "$TEST_SMBD_LOG_DIR.9"');
     end
@@ -30,13 +33,20 @@ class SMBTest < Test::Unit::TestCase
     Dir.mkdir(ENV['TEST_SMBD_LOG_DIR'], 0750)
     Dir.mkdir(ENV['TEST_SMBD_VAR_DIR'], 0750)
     Dir.mkdir(ENV['TEST_SMBD_SHARE_DIR'], 0750)
+    File.open(ENV['TEST_SMBD_SHARE_DIR'] + "/file1.txt", "wb") do |file|
+      file.write("file1.txt")
+    end
   end
 
   def teardown
   end
 
-  def test_all
-    s = Net::SMBCCTX.new
+  def test_smb
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      return [nil, 'username', 'password']
+    }
+    #smb.open("//dummy/share/file1.txt", "r");
   end
 end
 

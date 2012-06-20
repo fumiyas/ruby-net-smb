@@ -12,18 +12,18 @@
 
 static VALUE rb_smb_eError;
 
-struct rb_smbcctx_data {
+struct rb_smb_data {
   SMBCCTX       *smbcctx;
   VALUE         auth_callback;
 };
 
-#define RB_SMBCCTX_DATA_FROM_SELF(self, data) \
-  struct rb_smbcctx_data *data; \
-  Data_Get_Struct(self, struct rb_smbcctx_data, data);
+#define RB_SMB_DATA_FROM_SELF(self, data) \
+  struct rb_smb_data *data; \
+  Data_Get_Struct(self, struct rb_smb_data, data);
 
 /* ====================================================================== */
 
-static void smbcctx_gc_mark(struct rb_smbcctx_data *data)
+static void smbcctx_gc_mark(struct rb_smb_data *data)
 {
   rb_gc_mark(data->auth_callback);
 }
@@ -34,14 +34,12 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
 	char *username, int unmaxlen,
 	char *password, int pwmaxlen)
 {
-  VALUE self;
+  VALUE self = (VALUE)smbc_getOptionUserData(smbcctx);
   VALUE ary;
   VALUE wg;
   VALUE un;
   VALUE pw;
-
-  self = (VALUE)smbc_getOptionUserData(smbcctx);
-  RB_SMBCCTX_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_SELF(self, data);
 
   if (NIL_P(data->auth_callback)) {
     return;
@@ -97,14 +95,14 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   }
 }
 
-static void smbcctx_free(struct rb_smbcctx_data *data)
+static void smbcctx_free(struct rb_smb_data *data)
 {
   smbc_free_context(data->smbcctx, 1);
 }
 
-static VALUE rb_smbcctx_alloc(VALUE klass)
+static VALUE rb_smb_alloc(VALUE klass)
 {
-  struct rb_smbcctx_data *data = ALLOC(struct rb_smbcctx_data);
+  struct rb_smb_data *data = ALLOC(struct rb_smb_data);
 
   memset(data, 0, sizeof(*data));
 
@@ -119,13 +117,14 @@ static VALUE rb_smbcctx_alloc(VALUE klass)
   return Data_Wrap_Struct(klass, smbcctx_gc_mark, smbcctx_free, data);
 }
 
-static VALUE rb_smbcctx_initialize(VALUE self)
+static VALUE rb_smb_initialize(VALUE self)
 {
-  RB_SMBCCTX_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_SELF(self, data);
 
   smbc_setDebug(data->smbcctx, 0);
   smbc_setOptionUserData(data->smbcctx, (void *)self);
   smbc_setOptionDebugToStderr(data->smbcctx, SMBCCTX_TRUE);
+  smbc_setOptionNoAutoAnonymousLogin(data->smbcctx,  SMBCCTX_TRUE);
   smbc_setFunctionAuthDataWithContext(data->smbcctx, smbcctx_auth_fn);
 
   if (smbc_init_context(data->smbcctx) == NULL) {
@@ -135,41 +134,41 @@ static VALUE rb_smbcctx_initialize(VALUE self)
   return self;
 }
 
-static VALUE rb_smbcctx_debug_get(VALUE self)
+static VALUE rb_smb_debug_get(VALUE self)
 {
-  RB_SMBCCTX_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_SELF(self, data);
 
   return INT2NUM(smbc_getDebug(data->smbcctx));
 }
 
-static VALUE rb_smbcctx_debug_set(VALUE self, VALUE debug)
+static VALUE rb_smb_debug_set(VALUE self, VALUE debug)
 {
-  RB_SMBCCTX_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_SELF(self, data);
 
   smbc_setDebug(data->smbcctx, NUM2INT(debug));
 
   return debug;
 }
 
-static VALUE rb_smbcctx_use_kerberos_get(VALUE self)
+static VALUE rb_smb_use_kerberos_get(VALUE self)
 {
-  RB_SMBCCTX_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_SELF(self, data);
 
   return smbc_getOptionUseKerberos(data->smbcctx) ? Qtrue : Qfalse;
 }
 
-static VALUE rb_smbcctx_use_kerberos_set(VALUE self, VALUE flag)
+static VALUE rb_smb_use_kerberos_set(VALUE self, VALUE flag)
 {
-  RB_SMBCCTX_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_SELF(self, data);
 
   smbc_setOptionUseKerberos(data->smbcctx, TRUE_P(flag) ? SMBCCTX_TRUE : SMBCCTX_FALSE);
 
   return flag;
 }
 
-static VALUE rb_smbcctx_on_auth(int argc, VALUE* argv, VALUE self)
+static VALUE rb_smb_on_auth(int argc, VALUE* argv, VALUE self)
 {
-  RB_SMBCCTX_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_SELF(self, data);
 
   VALUE proc;
   VALUE block;
@@ -199,21 +198,19 @@ void Init_smb(void)
   VALUE rb_mNet = rb_define_module("Net");
   /* Net::SMB */
   VALUE rb_cSMB = rb_define_class_under(rb_mNet, "SMB", rb_cObject);
-  /* Net::SMB::CCTX */
-  VALUE rb_cSMBCCTX = rb_define_class_under(rb_cSMB, "CCTX", rb_cObject);
 
   /* Net::SMB::Error */
   rb_smb_eError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
 
   /* Net::SMB::CCTX */
-  rb_define_alloc_func(rb_cSMBCCTX, rb_smbcctx_alloc);
-  rb_define_method(rb_cSMBCCTX, "initialize", rb_smbcctx_initialize, 0);
-  rb_define_method(rb_cSMBCCTX, "debug", rb_smbcctx_debug_get, 0);
-  rb_define_method(rb_cSMBCCTX, "debug=", rb_smbcctx_debug_set, 1);
-  rb_define_method(rb_cSMBCCTX, "use_kerberos", rb_smbcctx_use_kerberos_get, 0);
-  rb_define_method(rb_cSMBCCTX, "use_kerberos=", rb_smbcctx_use_kerberos_set, 1);
-  rb_define_method(rb_cSMBCCTX, "on_auth", rb_smbcctx_on_auth, -1);
-  rb_define_alias(rb_cSMBCCTX, "on_authentication", "on_auth");
+  rb_define_alloc_func(rb_cSMB, rb_smb_alloc);
+  rb_define_method(rb_cSMB, "initialize", rb_smb_initialize, 0);
+  rb_define_method(rb_cSMB, "debug", rb_smb_debug_get, 0);
+  rb_define_method(rb_cSMB, "debug=", rb_smb_debug_set, 1);
+  rb_define_method(rb_cSMB, "use_kerberos", rb_smb_use_kerberos_get, 0);
+  rb_define_method(rb_cSMB, "use_kerberos=", rb_smb_use_kerberos_set, 1);
+  rb_define_method(rb_cSMB, "on_auth", rb_smb_on_auth, -1);
+  rb_define_alias(rb_cSMB, "on_authentication", "on_auth");
 
 }
 
