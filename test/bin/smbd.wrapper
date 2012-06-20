@@ -1,11 +1,18 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
-Process.setsid
+command = [
+  ENV['TEST_SMBD'],
+  "--configfile=#{ENV['TEST_SMB_CONF']}",
+  "--debuglevel=#{ENV['TEST_SMBD_DEBUGLEVEL']}",
+  "--log-basename=#{ENV['TEST_SMBD_LOG_DIR']}/smbd.log",
+]
 
-exec(
-  $ENV['TEST_SMBD'],
-  "--configfile=#{$ENV['TEST_SMB_CONF']}",
-  "--debuglevel=#{$ENV['TEST_SMBD_DEBUGLEVEL']}",
-  "--log-basename=#{$ENV['TEST_SMBD_LOG_DIR']}/smbd.log",
-);
+begin
+  Process.setsid
+rescue Errno::EPERM
+  ## Ignore, already process group leader
+  #command.unshift("setsid")
+end
+
+exec(*command)
 
