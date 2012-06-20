@@ -97,6 +97,7 @@ static void rb_smb_data_gc_mark(struct rb_smb_data *data)
 static void rb_smb_data_free(struct rb_smb_data *data)
 {
   smbc_free_context(data->smbcctx, 1);
+  ruby_xfree(data);
 }
 
 static VALUE rb_smb_data_alloc(VALUE klass)
