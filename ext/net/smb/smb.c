@@ -23,11 +23,6 @@ struct rb_smb_data {
 
 /* ====================================================================== */
 
-static void smbcctx_gc_mark(struct rb_smb_data *data)
-{
-  rb_gc_mark(data->auth_callback);
-}
-
 static void smbcctx_auth_fn(SMBCCTX *smbcctx,
 	const char *server, const char *share,
 	char *workgroup, int wgmaxlen,
@@ -55,10 +50,9 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   }
   if (RARRAY_LEN(ary) != 3) {
     rb_raise(rb_eArgError,
-	"Array should contain workgroup, "
-	"username and password to use as authentication");
+	"Array should contain username, passsword, and optional workgroup name");
   }
-  
+
   wg = RARRAY_PTR(ary)[0];
   un = RARRAY_PTR(ary)[1];
   pw = RARRAY_PTR(ary)[2];
@@ -95,12 +89,17 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   }
 }
 
-static void smbcctx_free(struct rb_smb_data *data)
+static void rb_smb_data_gc_mark(struct rb_smb_data *data)
+{
+  rb_gc_mark(data->auth_callback);
+}
+
+static void rb_smb_data_free(struct rb_smb_data *data)
 {
   smbc_free_context(data->smbcctx, 1);
 }
 
-static VALUE rb_smb_alloc(VALUE klass)
+static VALUE rb_smb_data_alloc(VALUE klass)
 {
   struct rb_smb_data *data = ALLOC(struct rb_smb_data);
 
@@ -114,7 +113,7 @@ static VALUE rb_smb_alloc(VALUE klass)
 
   data->auth_callback = Qnil;
 
-  return Data_Wrap_Struct(klass, smbcctx_gc_mark, smbcctx_free, data);
+  return Data_Wrap_Struct(klass, rb_smb_data_gc_mark, rb_smb_data_free, data);
 }
 
 static VALUE rb_smb_initialize(VALUE self)
@@ -203,7 +202,7 @@ void Init_smb(void)
   rb_smb_eError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
 
   /* Net::SMB::CCTX */
-  rb_define_alloc_func(rb_cSMB, rb_smb_alloc);
+  rb_define_alloc_func(rb_cSMB, rb_smb_data_alloc);
   rb_define_method(rb_cSMB, "initialize", rb_smb_initialize, 0);
   rb_define_method(rb_cSMB, "debug", rb_smb_debug_get, 0);
   rb_define_method(rb_cSMB, "debug=", rb_smb_debug_set, 1);
