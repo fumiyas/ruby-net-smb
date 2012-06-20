@@ -48,14 +48,14 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   if (TYPE(ary) != T_ARRAY) {
     return;
   }
-  if (RARRAY_LEN(ary) != 3) {
+  if (RARRAY_LEN(ary) < 2 || RARRAY_LEN(ary) > 3) {
     rb_raise(rb_eArgError,
 	"Array should contain username, passsword, and optional workgroup name");
   }
 
-  wg = RARRAY_PTR(ary)[0];
-  un = RARRAY_PTR(ary)[1];
-  pw = RARRAY_PTR(ary)[2];
+  un = RARRAY_PTR(ary)[0];
+  pw = RARRAY_PTR(ary)[1];
+  wg = (RARRAY_LEN(ary) >= 3) ? RARRAY_PTR(ary)[2] : Qnil;
 
   if (!NIL_P(wg)) {
     SafeStringValue(wg);

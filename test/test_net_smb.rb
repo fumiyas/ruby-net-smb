@@ -44,7 +44,7 @@ class SMBTest < Test::Unit::TestCase
   def test_smb
     smb = Net::SMB.new
     smb.on_auth {|server, share|
-      return [nil, 'username', 'password']
+      return ['username', 'password']
     }
     #smb.open("//dummy/share/file1.txt", "r");
   end
