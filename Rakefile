@@ -1,8 +1,13 @@
 begin
+  load 'Rakefile.local'
+rescue LoadError => e
+end
+
+begin
   require 'bundler/gem_tasks'
 rescue LoadError => e
-  p e
 end
+
 require 'rake/clean'
 require 'rake/testtask'
 
