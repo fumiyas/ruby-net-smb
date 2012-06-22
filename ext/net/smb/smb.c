@@ -1,5 +1,6 @@
 /*
  * Ruby/Net::SMB - SMB/CIFS client (Samba libsmbclient binding) for Ruby
+ * Net::SMB class
  * Copyright (C) 2012 SATOH Fumiyas @ OSS Technology Corp., Japan
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,16 +19,8 @@
 
 #include "rb_smb.h"
 
-static VALUE rb_smb_eError;
-
-struct rb_smb_data {
-  SMBCCTX       *smbcctx;
-  VALUE         auth_callback;
-};
-
-#define RB_SMB_DATA_FROM_SELF(self, data) \
-  struct rb_smb_data *data; \
-  Data_Get_Struct(self, struct rb_smb_data, data);
+VALUE rb_cSMB;
+VALUE rb_eSMBError;
 
 /* ====================================================================== */
 
@@ -42,7 +35,7 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   VALUE wg;
   VALUE un;
   VALUE pw;
-  RB_SMB_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_OBJ(self, data);
 
   if (NIL_P(data->auth_callback)) {
     return;
@@ -105,14 +98,18 @@ static void rb_smb_data_gc_mark(struct rb_smb_data *data)
 static void rb_smb_data_free(struct rb_smb_data *data)
 {
   smbc_free_context(data->smbcctx, 1);
+
   ruby_xfree(data);
 }
 
 static VALUE rb_smb_data_alloc(VALUE klass)
 {
+  VALUE data_obj;
   struct rb_smb_data *data = ALLOC(struct rb_smb_data);
 
   memset(data, 0, sizeof(*data));
+
+  data_obj = Data_Wrap_Struct(klass, rb_smb_data_gc_mark, rb_smb_data_free, data);
 
   /* FIXME: Unset $HOME to ignore $HOME/.smb/smb.conf */
   data->smbcctx = smbc_new_context();
@@ -122,12 +119,12 @@ static VALUE rb_smb_data_alloc(VALUE klass)
 
   data->auth_callback = Qnil;
 
-  return Data_Wrap_Struct(klass, rb_smb_data_gc_mark, rb_smb_data_free, data);
+  return data_obj;
 }
 
 static VALUE rb_smb_initialize(VALUE self)
 {
-  RB_SMB_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_OBJ(self, data);
 
   smbc_setDebug(data->smbcctx, 0);
   smbc_setOptionUserData(data->smbcctx, (void *)self);
@@ -144,14 +141,14 @@ static VALUE rb_smb_initialize(VALUE self)
 
 static VALUE rb_smb_debug_get(VALUE self)
 {
-  RB_SMB_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_OBJ(self, data);
 
   return INT2NUM(smbc_getDebug(data->smbcctx));
 }
 
 static VALUE rb_smb_debug_set(VALUE self, VALUE debug)
 {
-  RB_SMB_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_OBJ(self, data);
 
   smbc_setDebug(data->smbcctx, NUM2INT(debug));
 
@@ -160,14 +157,14 @@ static VALUE rb_smb_debug_set(VALUE self, VALUE debug)
 
 static VALUE rb_smb_use_kerberos_get(VALUE self)
 {
-  RB_SMB_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_OBJ(self, data);
 
   return smbc_getOptionUseKerberos(data->smbcctx) ? Qtrue : Qfalse;
 }
 
 static VALUE rb_smb_use_kerberos_set(VALUE self, VALUE flag)
 {
-  RB_SMB_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_OBJ(self, data);
 
   smbc_setOptionUseKerberos(data->smbcctx, TRUE_P(flag) ? SMBCCTX_TRUE : SMBCCTX_FALSE);
 
@@ -176,7 +173,7 @@ static VALUE rb_smb_use_kerberos_set(VALUE self, VALUE flag)
 
 static VALUE rb_smb_on_auth(int argc, VALUE* argv, VALUE self)
 {
-  RB_SMB_DATA_FROM_SELF(self, data);
+  RB_SMB_DATA_FROM_OBJ(self, data);
 
   VALUE proc;
   VALUE block;
@@ -199,18 +196,26 @@ static VALUE rb_smb_on_auth(int argc, VALUE* argv, VALUE self)
   return Qnil;
 }
 
+static VALUE rb_smb_opendir(VALUE self, VALUE vurl)
+{
+  VALUE args[2];
+  VALUE dir;
+
+  args[0] = self;
+  args[1] = vurl;
+  dir = rb_class_new_instance(2, args, rb_cSMBDir);
+
+  return dir;
+}
+
 /* ====================================================================== */
 
 void Init_smb(void)
 {
   VALUE rb_mNet = rb_define_module("Net");
-  /* Net::SMB */
-  VALUE rb_cSMB = rb_define_class_under(rb_mNet, "SMB", rb_cObject);
-
-  /* Net::SMB::Error */
-  rb_smb_eError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
 
   /* Net::SMB */
+  rb_cSMB = rb_define_class_under(rb_mNet, "SMB", rb_cObject);
   rb_define_alloc_func(rb_cSMB, rb_smb_data_alloc);
   rb_define_method(rb_cSMB, "initialize", rb_smb_initialize, 0);
   rb_define_method(rb_cSMB, "debug", rb_smb_debug_get, 0);
@@ -219,6 +224,12 @@ void Init_smb(void)
   rb_define_method(rb_cSMB, "use_kerberos=", rb_smb_use_kerberos_set, 1);
   rb_define_method(rb_cSMB, "on_auth", rb_smb_on_auth, -1);
   rb_define_alias(rb_cSMB, "on_authentication", "on_auth");
+  rb_define_method(rb_cSMB, "opendir", rb_smb_opendir, 1);
 
+  /* Net::SMB::Error */
+  rb_eSMBError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
+
+  /* Init_smbfile(); */
+  Init_smbdir();
 }
 

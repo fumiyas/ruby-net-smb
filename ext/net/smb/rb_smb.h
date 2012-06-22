@@ -31,6 +31,23 @@
 #define SMBCCTX_TRUE	((smbc_bool)1)
 #define SMBCCTX_FALSE	((smbc_bool)0)
 
+struct rb_smb_data {
+  SMBCCTX       *smbcctx;
+  VALUE         auth_callback;
+};
+
+#define RB_SMB_DATA_FROM_OBJ(obj, data) \
+  struct rb_smb_data *data; \
+  Data_Get_Struct(obj, struct rb_smb_data, data);
+
+extern VALUE rb_cSMB;
+extern VALUE rb_cSMBFile;
+extern VALUE rb_cSMBDir;
+extern VALUE rb_eSMBError;
+
+void Init_smbfile(void);
+void Init_smbdir(void);
+
 #define _RB_SMB_H_
 
 #endif /* _RB_SMB_H_ */
