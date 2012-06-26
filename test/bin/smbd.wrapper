@@ -5,8 +5,8 @@ ENV['LC_ALL'] = 'C'
 command = [
   ENV['TEST_SMBD'],
   "--configfile=#{ENV['TEST_SMB_CONF']}",
-  "--debuglevel=#{ENV['TEST_SMBD_DEBUGLEVEL']}",
-  "--log-basename=#{ENV['TEST_SMBD_LOG_DIR']}",
+  "--debuglevel=#{ENV['TEST_SAMBA_DEBUGLEVEL']}",
+  "--log-basename=#{ENV['TEST_SAMBA_LOG_DIR']}",
 ]
 
 if ENV['TEST_SMBD_TRACE']
@@ -14,7 +14,7 @@ if ENV['TEST_SMBD_TRACE']
     "strace",
     "-ffttTx",
     "-s9999",
-    "-o#{ENV['TEST_SMBD_LOG_DIR']}/smbd.strace.log",
+    "-o#{ENV['TEST_SAMBA_LOG_DIR']}/smbd.strace.log",
   )
 end
 
