@@ -9,13 +9,11 @@ command = [
   "--log-basename=#{ENV['TEST_SAMBA_LOG_DIR']}",
 ]
 
-if ENV['TEST_SMBD_TRACE']
-  command.unshift(
-    "strace",
-    "-ffttTx",
-    "-s9999",
-    "-o#{ENV['TEST_SAMBA_LOG_DIR']}/smbd.strace.log",
-  )
+if ENV['TEST_SMBD_STRACE']
+  strace = [ENV['TEST_SMBD_STRACE']]
+  strace << ENV['TEST_SMBD_STRACE_OPTIONS'] if ENV['TEST_SMBD_STRACE_OPTIONS']
+  strace << "-o#{ENV['TEST_SAMBA_LOG_DIR']}/smbd.strace.log"
+  command.unshift(*strace)
 end
 
 begin

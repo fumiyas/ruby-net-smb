@@ -1,0 +1,7 @@
+ENV['CFLAGS'] = '-I/usr/local/samba/include'
+ENV['LDFLAGS'] = '-L/usr/local/samba/lib -Wl,-rpath,/usr/local/samba/lib'
+
+ENV['TEST_SMBD'] = '/usr/local/samba/bin/smbd'
+ENV['TEST_PDBEDIT'] = '/usr/local/samba/bin/pdbedit'
+#ENV['TEST_SMBD_STRACE'] = 'strace'
+#ENV['TEST_SMBD_STRACE_OPTIONS'] = '-ffttTxs9999'
