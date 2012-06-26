@@ -23,7 +23,7 @@ class SMBTest < Test::Unit::TestCase
 
     ## Rotate log directory
     if File.exist?(@samba_log_dir + '.9')
-      system('/bin/rm -rf "$TEST_SAMBA_LOG_DIR.9"');
+      system('/bin/rm', '-rf', @samba_log_dir + '.9');
     end
     if File.exist?(@samba_log_dir)
       File.rename(@samba_log_dir, @samba_log_dir + '.0')
