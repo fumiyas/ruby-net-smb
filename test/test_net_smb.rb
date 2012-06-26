@@ -12,6 +12,7 @@ class SMBTest < Test::Unit::TestCase
 
     @smb_conf = ENV['TEST_SMB_CONF'] ||= @test_dir + "/etc/smb.conf"
     @smbd = ENV['TEST_SMBD'] ||= "smbd"
+    @pdbedit = ENV['TEST_PDBEDIT'] ||= "pdbedit"
     @samba_debug_level = ENV['TEST_SAMBA_DEBUGLEVEL'] ||= "10"
     @samba_log_dir = ENV['TEST_SAMBA_LOG_DIR'] ||= @test_dir + "/log"
     @samba_var_dir = ENV['TEST_SAMBA_VAR_DIR'] ||= @samba_log_dir + "/var"
@@ -43,6 +44,17 @@ class SMBTest < Test::Unit::TestCase
     File.open(@share_dir + "/file1.txt", "wb") do |file|
       file.write("file1.txt")
     end
+
+    pdbedit_r, pdbedit_w = IO.pipe
+    pdbedit_pid = Kernel.spawn(
+      @pdbedit, "--configfile", @smb_conf, "--create", "--password-from-stdin", @username,
+      :in => pdbedit_r,
+      [:out, :err] => [@samba_log_dir + '/pdbedit.log', 'w'],
+    )
+    pdbedit_r.close
+    pdbedit_w.print(@password, "\n")
+    pdbedit_w.print(@password, "\n")
+    pdbedit_w.close
   end
 
   def teardown
