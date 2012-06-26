@@ -18,35 +18,25 @@
  */
 
 #include "rb_smb.h"
+#include "dlinklist.h"
 
 #include <errno.h>
 
 VALUE rb_cSMBDir;
 
-struct rb_smbdir_data {
-  VALUE         smb_obj;	/* Net::SMB object */
-  SMBCCTX	*smbcctx;
-  SMBCFILE	*smbcdir;
-};
-
-#define RB_SMBDIR_DATA_FROM_OBJ(obj, data) \
-  struct rb_smbdir_data *data; \
-  Data_Get_Struct(obj, struct rb_smbdir_data, data);
-
 /* ====================================================================== */
 
-static void rb_smbdir_data_gc_mark(struct rb_smbdir_data *data)
+static void rb_smbdir_data_gc_mark(RB_SMBFILE_DATA *data)
 {
   rb_gc_mark(data->smb_obj);
 }
 
-static void rb_smbdir_data_free(struct rb_smbdir_data *data)
+static void rb_smbdir_data_free(RB_SMBFILE_DATA *data)
 {
-  if (data->smbcdir != NULL) {
+  if (data->smbcfile != NULL) {
     smbc_closedir_fn fn = smbc_getFunctionClosedir(data->smbcctx);
 
-fprintf(stderr, "\n closedir %p %p\n",data->smbcctx, data->smbcdir);
-    if ((*fn)(data->smbcctx, data->smbcdir) != 0) {
+    if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
       rb_sys_fail("SMBC_closedir_ctx()");
     }
   }
@@ -56,7 +46,7 @@ fprintf(stderr, "\n closedir %p %p\n",data->smbcctx, data->smbcdir);
 
 static VALUE rb_smbdir_data_alloc(VALUE klass)
 {
-  struct rb_smbdir_data *data = ALLOC(struct rb_smbdir_data);
+  RB_SMBFILE_DATA *data = ALLOC(RB_SMBFILE_DATA);
 
   memset(data, 0, sizeof(*data));
 
@@ -68,7 +58,7 @@ static VALUE rb_smbdir_data_alloc(VALUE klass)
 static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE vurl)
 {
   RB_SMB_DATA_FROM_OBJ(smb_obj, smb_data);
-  RB_SMBDIR_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
   smbc_opendir_fn fn;
   const char *url = StringValuePtr(vurl);
 
@@ -76,42 +66,43 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE vurl)
   data->smbcctx = smb_data->smbcctx;
 
   fn = smbc_getFunctionOpendir(data->smbcctx);
-  data->smbcdir = (*fn)(data->smbcctx, url);
-fprintf(stderr, "\n xxxxxxx %p xxxxxxxxxxxx\n", data->smbcctx);
-  if (data->smbcdir == NULL) {
-fprintf(stderr, "\n 2 xxxxxxx %p xxxxxxxxxxxx\n", data->smbcctx);
+  data->smbcfile = (*fn)(data->smbcctx, url);
+  if (data->smbcfile == NULL) {
     rb_sys_fail("SMBC_opendir_ctx()");
   }
-fprintf(stderr, "\n 3 xxxxxxx %p xxxxxxxxxxxx\n", data->smbcctx);
 
   return self;
 }
 
 static VALUE rb_smbdir_close(VALUE self)
 {
-  RB_SMBDIR_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
   smbc_closedir_fn fn;
 
   fn = smbc_getFunctionClosedir(data->smbcctx);
-  if ((*fn)(data->smbcctx, data->smbcdir) != 0) {
+  if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
     rb_sys_fail("SMBC_closedir_ctx()");
   }
 
-  data->smbcdir = NULL;
+  data->smbcctx = NULL;
+  data->smbcfile = NULL;
+
+  RB_SMB_DATA_FROM_OBJ(data->smb_obj, smb_data);
+  DLIST_REMOVE(smb_data->smbfile_data_list, data);
 
   return self;
 }
 
 static VALUE rb_smbdir_read(VALUE self)
 {
-  RB_SMBDIR_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
   smbc_readdir_fn fn;
   struct smbc_dirent *smbcdent;
 
   fn = smbc_getFunctionReaddir(data->smbcctx);
 
   errno = 0;
-  smbcdent = (*fn)(data->smbcctx, data->smbcdir);
+  smbcdent = (*fn)(data->smbcctx, data->smbcfile);
 
   if (smbcdent == NULL) {
     if (errno) {

@@ -31,14 +31,29 @@
 #define SMBCCTX_TRUE	((smbc_bool)1)
 #define SMBCCTX_FALSE	((smbc_bool)0)
 
+typedef struct rb_smb_data	RB_SMB_DATA;
+typedef struct rb_smbfile_data	RB_SMBFILE_DATA;
+
+struct rb_smbfile_data {
+  VALUE         smb_obj;	/* Net::SMB object */
+  SMBCCTX	*smbcctx;
+  SMBCFILE	*smbcfile;
+  RB_SMBFILE_DATA *next, *prev;
+};
+
 struct rb_smb_data {
-  SMBCCTX       *smbcctx;
-  VALUE         auth_callback;
+  SMBCCTX	*smbcctx;
+  VALUE		auth_callback;
+  RB_SMBFILE_DATA *smbfile_data_list;
 };
 
 #define RB_SMB_DATA_FROM_OBJ(obj, data) \
-  struct rb_smb_data *data; \
-  Data_Get_Struct(obj, struct rb_smb_data, data);
+  RB_SMB_DATA *data; \
+  Data_Get_Struct(obj, RB_SMB_DATA, data);
+
+#define RB_SMBFILE_DATA_FROM_OBJ(obj, data) \
+  RB_SMBFILE_DATA *data; \
+  Data_Get_Struct(obj, RB_SMBFILE_DATA, data);
 
 extern VALUE rb_cSMB;
 extern VALUE rb_cSMBFile;

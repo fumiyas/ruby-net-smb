@@ -18,6 +18,7 @@
  */
 
 #include "rb_smb.h"
+#include "dlinklist.h"
 
 VALUE rb_cSMB;
 VALUE rb_eSMBError;
@@ -90,13 +91,20 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   }
 }
 
-static void rb_smb_data_gc_mark(struct rb_smb_data *data)
+static void rb_smb_data_gc_mark(RB_SMB_DATA *data)
 {
   rb_gc_mark(data->auth_callback);
 }
 
-static void rb_smb_data_free(struct rb_smb_data *data)
+static void rb_smb_data_free(RB_SMB_DATA *data)
 {
+  RB_SMBFILE_DATA *smbfile_data;
+
+  for (smbfile_data = data->smbfile_data_list; smbfile_data != NULL;
+      smbfile_data = smbfile_data->next) {
+    smbfile_data->smbcctx = NULL;
+    smbfile_data->smbcfile = NULL;
+  }
   smbc_free_context(data->smbcctx, 1);
 
   ruby_xfree(data);
@@ -105,7 +113,7 @@ static void rb_smb_data_free(struct rb_smb_data *data)
 static VALUE rb_smb_data_alloc(VALUE klass)
 {
   VALUE data_obj;
-  struct rb_smb_data *data = ALLOC(struct rb_smb_data);
+  RB_SMB_DATA *data = ALLOC(RB_SMB_DATA);
 
   memset(data, 0, sizeof(*data));
 
@@ -198,12 +206,16 @@ static VALUE rb_smb_on_auth(int argc, VALUE* argv, VALUE self)
 
 static VALUE rb_smb_opendir(VALUE self, VALUE vurl)
 {
+  RB_SMB_DATA_FROM_OBJ(self, data);
   VALUE args[2];
   VALUE dir;
 
   args[0] = self;
   args[1] = vurl;
   dir = rb_class_new_instance(2, args, rb_cSMBDir);
+
+  RB_SMBFILE_DATA_FROM_OBJ(dir, smbfile_data);
+  DLIST_ADD(data->smbfile_data_list, smbfile_data);
 
   return dir;
 }
