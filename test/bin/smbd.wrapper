@@ -1,17 +1,27 @@
 #!/usr/bin/env ruby
 
+ENV['LC_ALL'] = 'C'
+
 command = [
   ENV['TEST_SMBD'],
   "--configfile=#{ENV['TEST_SMB_CONF']}",
   "--debuglevel=#{ENV['TEST_SMBD_DEBUGLEVEL']}",
-  "--log-basename=#{ENV['TEST_SMBD_LOG_DIR']}/smbd.log",
+  "--log-basename=#{ENV['TEST_SMBD_LOG_DIR']}",
 ]
+
+if ENV['TEST_SMBD_TRACE']
+  command.unshift(
+    "strace",
+    "-ffttTx",
+    "-s9999",
+    "-o#{ENV['TEST_SMBD_LOG_DIR']}/smbd.strace.log",
+  )
+end
 
 begin
   Process.setsid
 rescue Errno::EPERM
-  ## Ignore, already process group leader
-  #command.unshift("setsid")
+  ## This process is a process group leader already.
 end
 
 exec(*command)
