@@ -65,16 +65,17 @@ class SMBTest < Test::Unit::TestCase
     smb.on_auth {|server, share|
       [@username, @password]
     }
-    dir = smb.opendir("smb://localhost/private")
-    assert_kind_of(Net::SMB::Dir, smb.opendir("smb://localhost/private"))
-    dir.close
+    assert_nothing_raised do
+      smbdir = smb.opendir("smb://localhost/private")
+      smbdir.close
+    end
 
     smb = Net::SMB.new
     smb.on_auth {|server, share|
       [@username, 'invalid-password']
     }
     assert_raise(Errno::EPERM) do
-      dir = smb.opendir("smb://localhost/private")
+      smb.opendir("smb://localhost/private")
     end
 
     smb = Net::SMB.new
