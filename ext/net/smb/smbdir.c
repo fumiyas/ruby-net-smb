@@ -31,14 +31,29 @@ static void rb_smbdir_data_gc_mark(RB_SMBFILE_DATA *data)
   rb_gc_mark(data->smb_obj);
 }
 
+static void rb_smbdir_close_by_data(RB_SMBFILE_DATA *data)
+{
+  smbc_closedir_fn fn = smbc_getFunctionClosedir(data->smbcctx);
+
+  if (data->smbcfile == NULL) {
+    rb_raise(rb_eIOError, "Closed directory object");
+  }
+
+  if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
+    rb_sys_fail("SMBC_closedir_ctx() failed");
+  }
+
+  data->smbcctx = NULL;
+  data->smbcfile = NULL;
+
+  RB_SMB_DATA_FROM_OBJ(data->smb_obj, smb_data);
+  DLIST_REMOVE(smb_data->smbfile_data_list, data);
+}
+
 static void rb_smbdir_data_free(RB_SMBFILE_DATA *data)
 {
   if (data->smbcfile != NULL) {
-    smbc_closedir_fn fn = smbc_getFunctionClosedir(data->smbcctx);
-
-    if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
-      rb_sys_fail("SMBC_closedir_ctx()");
-    }
+    rb_smbdir_close_by_data(data);
   }
 
   ruby_xfree(data);
@@ -77,18 +92,8 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE vurl)
 static VALUE rb_smbdir_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
-  smbc_closedir_fn fn;
 
-  fn = smbc_getFunctionClosedir(data->smbcctx);
-  if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
-    rb_sys_fail("SMBC_closedir_ctx()");
-  }
-
-  data->smbcctx = NULL;
-  data->smbcfile = NULL;
-
-  RB_SMB_DATA_FROM_OBJ(data->smb_obj, smb_data);
-  DLIST_REMOVE(smb_data->smbfile_data_list, data);
+  rb_smbdir_close_by_data(data);
 
   return self;
 }
