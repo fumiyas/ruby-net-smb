@@ -120,6 +120,16 @@ static VALUE rb_smbdir_read(VALUE self)
   return rb_str_new2(smbcdent->name);
 }
 
+static VALUE rb_smbdir_each(VALUE self)
+{
+  VALUE name;
+
+  while (!NIL_P(name = rb_smbdir_read(self))) {
+    rb_yield(name);
+  }
+
+  return self;
+}
 
 /* ====================================================================== */
 
@@ -130,5 +140,6 @@ void Init_smbdir(void)
   rb_define_method(rb_cSMBDir, "initialize", rb_smbdir_initialize, 2);
   rb_define_method(rb_cSMBDir, "close", rb_smbdir_close, 0);
   rb_define_method(rb_cSMBDir, "read", rb_smbdir_read, 0);
+  rb_define_method(rb_cSMBDir, "each", rb_smbdir_each, 0);
 }
 

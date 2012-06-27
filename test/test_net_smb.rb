@@ -18,6 +18,9 @@ class SMBTest < Test::Unit::TestCase
     @samba_var_dir = ENV['TEST_SAMBA_VAR_DIR'] ||= @samba_log_dir + "/var"
     @share_dir = ENV['TEST_SHARE_DIR'] ||= @samba_log_dir + "/share"
 
+    @share_private = "smb://localhost/private"
+    @share_public = "smb://localhost/public"
+
     ENV['SMB_CONF_PATH'] = nil;
     ENV['LIBSMB_PROG'] ||= @test_dir + "/bin/smbd.wrapper"
 
@@ -39,11 +42,6 @@ class SMBTest < Test::Unit::TestCase
     Dir.mkdir(@samba_log_dir, 0750)
     Dir.mkdir(@samba_var_dir, 0750)
     Dir.mkdir(@share_dir, 0750)
-    Dir.mkdir(@share_dir + '/dir1', 0750)
-    Dir.mkdir(@share_dir + '/dir2', 0750)
-    File.open(@share_dir + "/file1.txt", "wb") do |file|
-      file.write("file1.txt")
-    end
 
     pdbedit_r, pdbedit_w = IO.pipe
     pdbedit_pid = Kernel.spawn(
@@ -66,7 +64,7 @@ class SMBTest < Test::Unit::TestCase
       [@username, @password]
     }
     assert_nothing_raised do
-      smbdir = smb.opendir("smb://localhost/private")
+      smbdir = smb.opendir(@share_private)
       smbdir.close
     end
 
@@ -75,7 +73,7 @@ class SMBTest < Test::Unit::TestCase
       [@username, 'invalid-password']
     }
     assert_raise(Errno::EPERM) do
-      smb.opendir("smb://localhost/private")
+      smb.opendir(@share_private)
     end
 
     smb = Net::SMB.new
@@ -83,7 +81,7 @@ class SMBTest < Test::Unit::TestCase
       ['invalid-user', @password]
     }
     assert_raise(Errno::EACCES) do
-      smb.opendir("smb://localhost/private")
+      smb.opendir(@share_private)
     end
 
     smb = Net::SMB.new
@@ -91,7 +89,7 @@ class SMBTest < Test::Unit::TestCase
       'blah-blah'
     }
     assert_raise(TypeError) do
-      smb.opendir("smb://localhost/private")
+      smb.opendir(@share_private)
     end
 
     smb = Net::SMB.new
@@ -99,7 +97,7 @@ class SMBTest < Test::Unit::TestCase
       [@username]
     }
     assert_raise(ArgumentError) do
-      smb.opendir("smb://localhost/private")
+      smb.opendir(@share_private)
     end
   end
 
@@ -109,7 +107,18 @@ class SMBTest < Test::Unit::TestCase
       [@username, @password]
     }
 
-    smbdir = smb.opendir("smb://localhost/private")
+    smbdir = smb.opendir(@share_private)
+    dents = [".", ".."]
+    assert_instance_of(String, dents.delete(smbdir.read))
+    assert_instance_of(String, dents.delete(smbdir.read))
+    assert_empty(dents)
+
+    smbdir = smb.opendir(@share_private)
+    dents = [".", ".."]
+    smbdir.each do |fname|
+      assert_instance_of(String, dents.delete(fname))
+    end
+    assert_empty(dents)
   end
 end
 
