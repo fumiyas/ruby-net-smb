@@ -60,17 +60,55 @@ class SMBTest < Test::Unit::TestCase
   def teardown
   end
 
-  def test_smb
+  def test_auth
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      [@username, @password]
+    }
+    dir = smb.opendir("smb://localhost/private")
+    assert_kind_of(Net::SMB::Dir, smb.opendir("smb://localhost/private"))
+    dir.close
+
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      [@username, 'invalid-password']
+    }
+    assert_raise(Errno::EPERM) do
+      dir = smb.opendir("smb://localhost/private")
+    end
+
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      ['invalid-user', @password]
+    }
+    assert_raise(Errno::EACCES) do
+      smb.opendir("smb://localhost/private")
+    end
+
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      'blah-blah'
+    }
+    assert_raise(TypeError) do
+      smb.opendir("smb://localhost/private")
+    end
+
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      [@username]
+    }
+    assert_raise(ArgumentError) do
+      smb.opendir("smb://localhost/private")
+    end
+  end
+
+  def test_dir
     smb = Net::SMB.new
     smb.on_auth {|server, share|
       [@username, @password]
     }
 
-    smbdir = smb.opendir("smb://localhost/share")
-    p smbdir.read
-    p smbdir.read
-    p smbdir.read
-    p smbdir.read
+    smbdir = smb.opendir("smb://localhost/private")
   end
 end
 
