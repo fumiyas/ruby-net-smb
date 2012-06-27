@@ -31,6 +31,10 @@
 #define SMBCCTX_TRUE	((smbc_bool)1)
 #define SMBCCTX_FALSE	((smbc_bool)0)
 
+#define RB_SMB_NAME	"Net::SMB"
+#define RB_SMBDIR_NAME	"Net::SMB::Dir"
+#define RB_SMBFILE_NAME	"Net::SMB::File"
+
 typedef struct rb_smb_data	RB_SMB_DATA;
 typedef struct rb_smbfile_data	RB_SMBFILE_DATA;
 

@@ -48,11 +48,14 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
     rb_str_new2(share));
 
   if (TYPE(ary) != T_ARRAY) {
-    return;
+    rb_raise(rb_eTypeError,
+	RB_SMB_NAME
+	"#on_auth proc must return an array of username, passsword, and optional workgroup name");
   }
   if (RARRAY_LEN(ary) < 2 || RARRAY_LEN(ary) > 3) {
     rb_raise(rb_eArgError,
-	"Array should contain username, passsword, and optional workgroup name");
+	RB_SMB_NAME
+	"#on_auth proc must return an array of username, passsword, and optional workgroup name");
   }
 
   un = RARRAY_PTR(ary)[0];
@@ -62,7 +65,7 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   if (!NIL_P(wg)) {
     SafeStringValue(wg);
     if (RSTRING_LEN(wg) > wgmaxlen - 1) {
-      rb_raise(rb_eArgError, "Workgroup too long");
+      rb_raise(rb_eArgError, "Workgroup name too long");
     }
     strcpy(workgroup, RSTRING_PTR(wg));
   }
@@ -122,7 +125,7 @@ static VALUE rb_smb_data_alloc(VALUE klass)
   /* FIXME: Unset $HOME to ignore $HOME/.smb/smb.conf */
   data->smbcctx = smbc_new_context();
   if (data->smbcctx == NULL) {
-    rb_sys_fail("smbc_new_context()");
+    rb_sys_fail("smbc_new_context() failed");
   }
 
   data->auth_callback = Qnil;
@@ -141,7 +144,7 @@ static VALUE rb_smb_initialize(VALUE self)
   smbc_setFunctionAuthDataWithContext(data->smbcctx, smbcctx_auth_fn);
 
   if (smbc_init_context(data->smbcctx) == NULL) {
-    rb_sys_fail("smbc_init_context()");
+    rb_sys_fail("smbc_init_context() failed");
   }
 
   return self;
