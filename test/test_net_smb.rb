@@ -1,3 +1,6 @@
+## vim:fileencoding=utf-8
+## -*- encoding: utf-8 -*-
+
 require 'net/smb'
 require 'test/unit'
 require 'etc'
@@ -102,29 +105,44 @@ class SMBTest < Test::Unit::TestCase
   end
 
   def test_dir
+    dents_dirs = ["dir", "ディレクトリ"]
+    dents_files = ["file", "ファイル"]
+    dents_all = [".", "..", *dents_dirs, *dents_files]
+    dents_dirs.each do |dname|
+      Dir.mkdir(@share_dir + '/' + dname, 0750)
+    end
+    dents_files.each do |fname|
+      File.open(@share_dir + '/' + fname, "wb") do |file|
+	file.write(fname)
+      end
+    end
+
     smb = Net::SMB.new
     smb.on_auth {|server, share|
       [@username, @password]
     }
 
     smbdir = smb.opendir(@share_private)
-    dents = [".", ".."]
-    assert(dents.delete(smbdir.read) != nil)
-    assert(dents.delete(smbdir.read) != nil)
+    dents = dents_all.clone
+    while fname = smbdir.read
+      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+    end
     assert_empty(dents)
 
     smbdir = smb.opendir(@share_private)
-    dents = [".", ".."]
+    dents = dents_all.clone
     smbdir.each do |fname|
       assert(dents.delete(fname) != nil)
     end
     assert_empty(dents)
 
     smbdir = smb.opendir(@share_private)
-    dents = [".", ".."]
+    dents = dents_all.clone
     smbdir_enum = smbdir.each
-    assert(dents.delete(smbdir_enum.next) != nil)
-    assert(dents.delete(smbdir_enum.next) != nil)
+    dents.size.times do |n|
+      fname = smbdir_enum.next
+      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+    end
     assert_raise(StopIteration) do
       smbdir_enum.next
     end

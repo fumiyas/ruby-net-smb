@@ -137,6 +137,8 @@ static VALUE rb_smb_initialize(VALUE self)
 {
   RB_SMB_DATA_FROM_OBJ(self, data);
 
+  data->enc = rb_enc_find("UTF-8"); /* FIXME: Read unix charset from smb.conf? */
+
   smbc_setDebug(data->smbcctx, 0);
   smbc_setOptionUserData(data->smbcctx, (void *)self);
   smbc_setOptionDebugToStderr(data->smbcctx, SMBCCTX_TRUE);

@@ -20,6 +20,7 @@
 #ifndef _RB_SMB_H_
 
 #include <ruby.h>
+#include <ruby/encoding.h>
 #include <libsmbclient.h>
 
 #define TRUE_P(value)   ((value) == Qtrue)
@@ -39,6 +40,7 @@ typedef struct rb_smb_data	RB_SMB_DATA;
 typedef struct rb_smbfile_data	RB_SMBFILE_DATA;
 
 struct rb_smbfile_data {
+  rb_encoding	*enc;
   VALUE         smb_obj;	/* Net::SMB object */
   SMBCCTX	*smbcctx;
   SMBCFILE	*smbcfile;
@@ -46,6 +48,7 @@ struct rb_smbfile_data {
 };
 
 struct rb_smb_data {
+  rb_encoding	*enc;
   SMBCCTX	*smbcctx;
   VALUE		auth_callback;
   RB_SMBFILE_DATA *smbfile_data_list;

@@ -72,10 +72,14 @@ static VALUE rb_smbdir_data_alloc(VALUE klass)
 
 static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE vurl)
 {
-  RB_SMB_DATA_FROM_OBJ(smb_obj, smb_data);
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMB_DATA_FROM_OBJ(smb_obj, smb_data);
   smbc_opendir_fn fn;
   const char *url = StringValuePtr(vurl);
+
+  /* FIXME: Take encoding from argument */
+  /* FIXME: Read unix charset (?) from smb.conf for default encoding */
+  data->enc = rb_enc_find("UTF-8");
 
   data->smb_obj = smb_obj;
   data->smbcctx = smb_data->smbcctx;
@@ -117,7 +121,7 @@ static VALUE rb_smbdir_read(VALUE self)
     return Qnil;
   }
 
-  return rb_str_new2(smbcdent->name);
+  return rb_external_str_new_with_enc(smbcdent->name, strlen(smbcdent->name), data->enc);
 }
 
 static VALUE rb_smbdir_each(VALUE self)
