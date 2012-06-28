@@ -109,14 +109,24 @@ class SMBTest < Test::Unit::TestCase
 
     smbdir = smb.opendir(@share_private)
     dents = [".", ".."]
-    assert_instance_of(String, dents.delete(smbdir.read))
-    assert_instance_of(String, dents.delete(smbdir.read))
+    assert(dents.delete(smbdir.read) != nil)
+    assert(dents.delete(smbdir.read) != nil)
     assert_empty(dents)
 
     smbdir = smb.opendir(@share_private)
     dents = [".", ".."]
     smbdir.each do |fname|
-      assert_instance_of(String, dents.delete(fname))
+      assert(dents.delete(fname) != nil)
+    end
+    assert_empty(dents)
+
+    smbdir = smb.opendir(@share_private)
+    dents = [".", ".."]
+    smbdir_enum = smbdir.each
+    assert(dents.delete(smbdir_enum.next) != nil)
+    assert(dents.delete(smbdir_enum.next) != nil)
+    assert_raise(StopIteration) do
+      smbdir_enum.next
     end
     assert_empty(dents)
   end
