@@ -105,6 +105,13 @@ class SMBTest < Test::Unit::TestCase
   end
 
   def test_dir
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      [nil, nil]
+    }
+    smbdir = smb.opendir(@share_public)
+    assert_equal(smb.object_id, smbdir.smb.object_id)
+
     dents_dirs = ["dir", "ディレクトリ"]
     dents_files = ["file", "ファイル"]
     dents_all = [".", "..", *dents_dirs, *dents_files]

@@ -93,6 +93,13 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE vurl)
   return self;
 }
 
+static VALUE rb_smbdir_smb(VALUE self)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  return data->smb_obj;
+}
+
 static VALUE rb_smbdir_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -144,6 +151,7 @@ void Init_smbdir(void)
   rb_cSMBDir = rb_define_class_under(rb_cSMB, "Dir", rb_cObject);
   rb_define_alloc_func(rb_cSMBDir, rb_smbdir_data_alloc);
   rb_define_method(rb_cSMBDir, "initialize", rb_smbdir_initialize, 2);
+  rb_define_method(rb_cSMBDir, "smb", rb_smbdir_smb, 0);
   rb_define_method(rb_cSMBDir, "close", rb_smbdir_close, 0);
   rb_define_method(rb_cSMBDir, "read", rb_smbdir_read, 0);
   rb_define_method(rb_cSMBDir, "each", rb_smbdir_each, 0);
