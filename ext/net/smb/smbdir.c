@@ -87,7 +87,7 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE vurl)
   fn = smbc_getFunctionOpendir(data->smbcctx);
   data->smbcfile = (*fn)(data->smbcctx, url);
   if (data->smbcfile == NULL) {
-    rb_sys_fail("SMBC_opendir_ctx()");
+    rb_sys_fail("SMBC_opendir_ctx() failed");
   }
 
   return self;
@@ -109,6 +109,46 @@ static VALUE rb_smbdir_close(VALUE self)
   return self;
 }
 
+static VALUE rb_smbdir_tell(VALUE self)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  smbc_telldir_fn fn;
+  off_t offset;
+
+  fn = smbc_getFunctionTelldir(data->smbcctx);
+
+  errno = 0;
+  offset = (*fn)(data->smbcctx, data->smbcfile);
+  if (offset == (off_t)-1) {
+    if (errno != 0) {
+      rb_sys_fail("SMBC_telldir_ctx() failed");
+    }
+  }
+
+  return LONG2NUM(offset);
+}
+
+static VALUE rb_smbdir_seek(VALUE self, VALUE offset_num)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  smbc_lseekdir_fn fn;
+  off_t offset = (off_t)NUM2LONG(offset_num);
+
+  fn = smbc_getFunctionLseekdir(data->smbcctx);
+
+  errno = 0;
+  if ((*fn)(data->smbcctx, data->smbcfile, offset) == -1) {
+    rb_sys_fail("SMBC_lseekdir_ctx() failed");
+  }
+
+  return self;
+}
+
+static VALUE rb_smbdir_rewind(VALUE self)
+{
+  return rb_smbdir_seek(self, LONG2NUM(0));
+}
+
 static VALUE rb_smbdir_read(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -122,7 +162,7 @@ static VALUE rb_smbdir_read(VALUE self)
 
   if (smbcdent == NULL) {
     if (errno) {
-      rb_sys_fail("SMBC_readdir_ctx()");
+      rb_sys_fail("SMBC_readdir_ctx() failed");
     }
 
     return Qnil;
@@ -153,6 +193,10 @@ void Init_smbdir(void)
   rb_define_method(rb_cSMBDir, "initialize", rb_smbdir_initialize, 2);
   rb_define_method(rb_cSMBDir, "smb", rb_smbdir_smb, 0);
   rb_define_method(rb_cSMBDir, "close", rb_smbdir_close, 0);
+  rb_define_method(rb_cSMBDir, "tell", rb_smbdir_tell, 0);
+  rb_define_alias(rb_cSMBDir, "pos", "tell");
+  rb_define_method(rb_cSMBDir, "seek", rb_smbdir_seek, 1);
+  rb_define_method(rb_cSMBDir, "rewind", rb_smbdir_rewind, 0);
   rb_define_method(rb_cSMBDir, "read", rb_smbdir_read, 0);
   rb_define_method(rb_cSMBDir, "each", rb_smbdir_each, 0);
 }

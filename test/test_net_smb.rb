@@ -130,8 +130,19 @@ class SMBTest < Test::Unit::TestCase
     }
 
     smbdir = smb.opendir(@share_private)
+    smbdir_pos = [smbdir.pos]
     dents = dents_all.clone
     while fname = smbdir.read
+      smbdir_pos << smbdir.pos
+      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+    end
+    assert_empty(dents)
+
+    smbdir.rewind
+    assert_equal(smbdir_pos.shift, smbdir.tell)
+    dents = dents_all.clone
+    while fname = smbdir.read
+      assert_equal(smbdir_pos.shift, smbdir.tell)
       assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
     end
     assert_empty(dents)
