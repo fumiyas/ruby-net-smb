@@ -23,6 +23,8 @@ class SMBTest < Test::Unit::TestCase
 
     @share_private = "smb://localhost/private"
     @share_public = "smb://localhost/public"
+    @dirs = ["dir", "ディレクトリ"]
+    @files = ["file", "ファイル"]
 
     ENV['SMB_CONF_PATH'] = nil;
     ENV['LIBSMB_PROG'] ||= @test_dir + "/bin/smbd.wrapper"
@@ -45,6 +47,14 @@ class SMBTest < Test::Unit::TestCase
     Dir.mkdir(@samba_log_dir, 0750)
     Dir.mkdir(@samba_var_dir, 0750)
     Dir.mkdir(@share_dir, 0750)
+    @dirs.each do |dname|
+      Dir.mkdir(@share_dir + '/' + dname, 0750)
+    end
+    @files.each do |fname|
+      File.open(@share_dir + '/' + fname, "wb") do |file|
+	file.write(fname)
+      end
+    end
 
     pdbedit_r, pdbedit_w = IO.pipe
     pdbedit_pid = Kernel.spawn(
@@ -105,29 +115,15 @@ class SMBTest < Test::Unit::TestCase
   end
 
   def test_dir
-    smb = Net::SMB.new
-    smb.on_auth {|server, share|
-      [nil, nil]
-    }
-    smbdir = smb.opendir(@share_public)
-    assert_equal(smb.object_id, smbdir.smb.object_id)
-
-    dents_dirs = ["dir", "ディレクトリ"]
-    dents_files = ["file", "ファイル"]
-    dents_all = [".", "..", *dents_dirs, *dents_files]
-    dents_dirs.each do |dname|
-      Dir.mkdir(@share_dir + '/' + dname, 0750)
-    end
-    dents_files.each do |fname|
-      File.open(@share_dir + '/' + fname, "wb") do |file|
-	file.write(fname)
-      end
-    end
+    dents_all = [".", "..", *@dirs, *@files]
 
     smb = Net::SMB.new
     smb.on_auth {|server, share|
       [@username, @password]
     }
+
+    smbdir = smb.opendir(@share_public)
+    assert_equal(smb.object_id, smbdir.smb.object_id)
 
     smbdir = smb.opendir(@share_private)
     smbdir_pos = [smbdir.pos]
