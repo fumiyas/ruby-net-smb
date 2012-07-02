@@ -21,10 +21,26 @@ class SMBTest < Test::Unit::TestCase
     @samba_var_dir = ENV['TEST_SAMBA_VAR_DIR'] ||= @samba_log_dir + "/var"
     @share_dir = ENV['TEST_SHARE_DIR'] ||= @samba_log_dir + "/share"
 
-    @share_private = "smb://localhost/private"
-    @share_public = "smb://localhost/public"
-    @dirs = ["dir", "ディレクトリ"]
-    @files = ["file", "ファイル"]
+    @share_private =	"smb://localhost/private"
+    @share_public =	"smb://localhost/public"
+    @dir_noexist =	"dir.noexist"
+    @dir_writeable =	"dir.writeable"
+    @dir_writeable_m =	"ディレクトリ.writeable"
+    @dirs_writeable =	[@dir_writeable, @dir_writeable_m]
+    @dir_readable =	"dir.readable"
+    @dirs_readable =	[@dir_readable]
+    @dir_noaccess =	"dir.noaccess"
+    @dirs_noaccess =	[@dir_noaccess]
+    @dirs = @dirs_readable + @dirs_writeable + @dirs_noaccess
+    @file_noexist =	"file.noexist"
+    @file_writeable =	"file.writeable"
+    @file_writeable_m =	"ファイル.writeable"
+    @files_writeable =	[@file_writeable, @file_writeable_m]
+    @file_readable =	"file.readable"
+    @files_readable =	[@file_readable]
+    @file_noaccess =	"file.noaccess"
+    @files_noaccess =	[@file_noaccess]
+    @files = @files_readable + @files_writeable + @files_noaccess
 
     ENV['SMB_CONF_PATH'] = nil;
     ENV['LIBSMB_PROG'] ||= @test_dir + "/bin/smbd.wrapper"
@@ -47,11 +63,27 @@ class SMBTest < Test::Unit::TestCase
     Dir.mkdir(@samba_log_dir, 0750)
     Dir.mkdir(@samba_var_dir, 0750)
     Dir.mkdir(@share_dir, 0750)
-    @dirs.each do |dname|
+    @dirs_readable.each do |dname|
+      Dir.mkdir(@share_dir + '/' + dname, 0550)
+    end
+    @dirs_writeable.each do |dname|
       Dir.mkdir(@share_dir + '/' + dname, 0750)
     end
-    @files.each do |fname|
-      File.open(@share_dir + '/' + fname, "wb") do |file|
+    @dirs_noaccess.each do |dname|
+      Dir.mkdir(@share_dir + '/' + dname, 0000)
+    end
+    @files_readable.each do |fname|
+      File.open(@share_dir + '/' + fname, "wb", 0440) do |file|
+	file.write(fname)
+      end
+    end
+    @files_writeable.each do |fname|
+      File.open(@share_dir + '/' + fname, "wb", 0660) do |file|
+	file.write(fname)
+      end
+    end
+    @files_noaccess.each do |fname|
+      File.open(@share_dir + '/' + fname, "wb", 0000) do |file|
 	file.write(fname)
       end
     end
@@ -161,6 +193,18 @@ class SMBTest < Test::Unit::TestCase
       smbdir_enum.next
     end
     assert_empty(dents)
+
+    assert_raise(Errno::ENOENT) do
+      smbdir = smb.opendir(@share_public + '/' + @dir_noexist)
+    end
+    assert_raise(Errno::EACCES) do
+      smbdir = smb.opendir(@share_public + '/' + @dir_noaccess)
+    end
+    ## Errno::ENOENT is not expected, but Samba 3.5 and 3.6 has a bug:
+    ## https://bugzilla.samba.org/show_bug.cgi?id=9021
+    assert_raise(Errno::ENOTDIR, Errno::ENOENT) do
+      smbdir = smb.opendir(@share_public + '/' + @file_writeable)
+    end
   end
 end
 
