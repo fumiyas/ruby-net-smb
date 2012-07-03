@@ -156,6 +156,10 @@ class SMBTest < Test::Unit::TestCase
 
     smbdir = smb.opendir(@share_public)
     assert_equal(smb.object_id, smbdir.smb.object_id)
+    smbdir.close
+    assert_raise(IOError) do
+      smbdir.close
+    end
 
     smbdir = smb.opendir(@share_private)
     smbdir_pos = [smbdir.pos]
@@ -205,7 +209,7 @@ class SMBTest < Test::Unit::TestCase
     assert_raise(Errno::ENOTDIR, Errno::ENOENT) do
       smbdir = smb.opendir(@share_public + '/' + @file_writeable)
     end
-  end
+  end ## test_dir
 end
 
 end

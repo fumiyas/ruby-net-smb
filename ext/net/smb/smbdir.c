@@ -33,11 +33,11 @@ static void rb_smbdir_data_gc_mark(RB_SMBFILE_DATA *data)
 
 static void rb_smbdir_close_by_data(RB_SMBFILE_DATA *data)
 {
-  smbc_closedir_fn fn = smbc_getFunctionClosedir(data->smbcctx);
-
   if (data->smbcfile == NULL) {
     rb_raise(rb_eIOError, "Closed directory object");
   }
+
+  smbc_closedir_fn fn = smbc_getFunctionClosedir(data->smbcctx);
 
   if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
     rb_sys_fail("SMBC_closedir_ctx() failed");
@@ -70,12 +70,12 @@ static VALUE rb_smbdir_data_alloc(VALUE klass)
   return Data_Wrap_Struct(klass, rb_smbdir_data_gc_mark, rb_smbdir_data_free, data);
 }
 
-static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE vurl)
+static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
   RB_SMB_DATA_FROM_OBJ(smb_obj, smb_data);
   smbc_opendir_fn fn;
-  const char *url = StringValuePtr(vurl);
+  const char *url = StringValueCStr(url_obj);
 
   /* FIXME: Take encoding from argument */
   /* FIXME: Read unix charset (?) from smb.conf for default encoding */
