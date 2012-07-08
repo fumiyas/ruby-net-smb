@@ -42,6 +42,11 @@ static void rb_smbdir_close_by_data(RB_SMBFILE_DATA *data)
   if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
     rb_sys_fail("SMBC_closedir_ctx() failed");
   }
+}
+
+static void rb_smbdir_close_and_deref_by_data(RB_SMBFILE_DATA *data)
+{
+  rb_smbdir_close_by_data(data);
 
   data->smbcctx = NULL;
   data->smbcfile = NULL;
@@ -53,7 +58,7 @@ static void rb_smbdir_close_by_data(RB_SMBFILE_DATA *data)
 static void rb_smbdir_data_free(RB_SMBFILE_DATA *data)
 {
   if (data->smbcfile != NULL) {
-    rb_smbdir_close_by_data(data);
+    rb_smbdir_close_and_deref_by_data(data);
   }
 
   ruby_xfree(data);
@@ -104,7 +109,7 @@ static VALUE rb_smbdir_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
 
-  rb_smbdir_close_by_data(data);
+  rb_smbdir_close_and_deref_by_data(data);
 
   return self;
 }
