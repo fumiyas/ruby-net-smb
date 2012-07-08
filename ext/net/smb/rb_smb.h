@@ -23,14 +23,14 @@
 #include <ruby/encoding.h>
 #include <libsmbclient.h>
 
+#define SMBC_TRUE	((smbc_bool)1)
+#define SMBC_FALSE	((smbc_bool)0)
+
 #define TRUE_P(value)   ((value) == Qtrue)
 #define FALSE_P(value)  (NIL_P(value) || (value) == Qfalse)
 
-#define BOOL2VALUE(b)   ((b) ? Qtrue : Qfalse)
-#define VALUE2BOOL(v)   (TRUE_P(v) ? 1 : 0)
-
-#define SMBCCTX_TRUE	((smbc_bool)1)
-#define SMBCCTX_FALSE	((smbc_bool)0)
+#define SMBC2RB_BOOL(b)   ((b) ? Qtrue : Qfalse)
+#define RB2SMBC_BOOL(v)   (TRUE_P(v) ? SMBC_TRUE : SMBC_FALSE)
 
 #define RB_SMB_NAME	"Net::SMB"
 #define RB_SMBDIR_NAME	"Net::SMB::Dir"

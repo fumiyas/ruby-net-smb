@@ -150,8 +150,8 @@ static VALUE rb_smb_initialize(VALUE self)
 
   smbc_setDebug(data->smbcctx, 0);
   smbc_setOptionUserData(data->smbcctx, (void *)self);
-  smbc_setOptionDebugToStderr(data->smbcctx, SMBCCTX_TRUE);
-  smbc_setOptionNoAutoAnonymousLogin(data->smbcctx,  SMBCCTX_TRUE);
+  smbc_setOptionDebugToStderr(data->smbcctx, SMBC_TRUE);
+  smbc_setOptionNoAutoAnonymousLogin(data->smbcctx,  SMBC_TRUE);
   smbc_setFunctionAuthDataWithContext(data->smbcctx, smbcctx_auth_fn);
 
   if (smbc_init_context(data->smbcctx) == NULL) {
@@ -181,14 +181,14 @@ static VALUE rb_smb_use_kerberos_get(VALUE self)
 {
   RB_SMB_DATA_FROM_OBJ(self, data);
 
-  return smbc_getOptionUseKerberos(data->smbcctx) ? Qtrue : Qfalse;
+  return SMBC2RB_BOOL(smbc_getOptionUseKerberos(data->smbcctx));
 }
 
 static VALUE rb_smb_use_kerberos_set(VALUE self, VALUE flag)
 {
   RB_SMB_DATA_FROM_OBJ(self, data);
 
-  smbc_setOptionUseKerberos(data->smbcctx, TRUE_P(flag) ? SMBCCTX_TRUE : SMBCCTX_FALSE);
+  smbc_setOptionUseKerberos(data->smbcctx, RB2SMBC_BOOL(flag));
 
   return flag;
 }
