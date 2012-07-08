@@ -117,13 +117,20 @@ static VALUE rb_smb_data_alloc(VALUE klass)
 {
   VALUE data_obj;
   RB_SMB_DATA *data = ALLOC(RB_SMB_DATA);
+  const char *home_backup = getenv("HOME");
 
   memset(data, 0, sizeof(*data));
 
   data_obj = Data_Wrap_Struct(klass, rb_smb_data_gc_mark, rb_smb_data_free, data);
 
-  /* FIXME: Unset $HOME to ignore $HOME/.smb/smb.conf */
+  /* Unset $HOME to ignore $HOME/.smb/smb.conf */
+  if (home_backup) {
+    unsetenv("HOME");
+  }
   data->smbcctx = smbc_new_context();
+  if (home_backup) {
+    setenv("HOME", home_backup, 1);
+  }
   if (data->smbcctx == NULL) {
     rb_sys_fail("smbc_new_context() failed");
   }
