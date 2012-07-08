@@ -36,6 +36,8 @@
 #define RB_SMBDIR_NAME	"Net::SMB::Dir"
 #define RB_SMBFILE_NAME	"Net::SMB::File"
 
+#define RB_SMBFILE_BUFFER_SIZE 8192
+
 typedef struct rb_smb_data	RB_SMB_DATA;
 typedef struct rb_smbfile_data	RB_SMBFILE_DATA;
 
@@ -44,6 +46,15 @@ struct rb_smbfile_data {
   VALUE         smb_obj;	/* Net::SMB object */
   SMBCCTX	*smbcctx;
   SMBCFILE	*smbcfile;
+  char		*url;
+  int		fmode;
+  int		oflags;
+  int		eof;
+  off_t		pos;
+  char		*buffer;
+  size_t	buffer_size;
+  size_t	buffer_used_size;
+  size_t	buffer_pos;
   RB_SMBFILE_DATA *next, *prev;
 };
 
@@ -63,12 +74,12 @@ struct rb_smb_data {
   Data_Get_Struct(obj, RB_SMBFILE_DATA, data);
 
 extern VALUE rb_cSMB;
-extern VALUE rb_cSMBFile;
-extern VALUE rb_cSMBDir;
 extern VALUE rb_eSMBError;
+extern VALUE rb_cSMBDir;
+extern VALUE rb_cSMBFile;
 
-void Init_smbfile(void);
 void Init_smbdir(void);
+void Init_smbfile(void);
 
 #define _RB_SMB_H_
 

@@ -137,7 +137,9 @@ static VALUE rb_smb_initialize(VALUE self)
 {
   RB_SMB_DATA_FROM_OBJ(self, data);
 
-  data->enc = rb_enc_find("UTF-8"); /* FIXME: Read unix charset from smb.conf? */
+  /* FIXME: Take encoding from argument */
+  /* FIXME: Read unix charset (?) from smb.conf for default encoding */
+  data->enc = rb_enc_find("UTF-8");
 
   smbc_setDebug(data->smbcctx, 0);
   smbc_setOptionUserData(data->smbcctx, (void *)self);
@@ -209,21 +211,38 @@ static VALUE rb_smb_on_auth(int argc, VALUE* argv, VALUE self)
   return Qnil;
 }
 
-static VALUE rb_smb_opendir(VALUE self, VALUE vurl)
+static VALUE rb_smb_opendir(VALUE self, VALUE url_obj)
 {
   RB_SMB_DATA_FROM_OBJ(self, data);
   VALUE args[2];
-  VALUE dir;
+  VALUE smbdir;
 
   args[0] = self;
-  args[1] = vurl;
-  dir = rb_class_new_instance(2, args, rb_cSMBDir);
+  args[1] = url_obj;
+  smbdir = rb_class_new_instance(2, args, rb_cSMBDir);
 
-  RB_SMBFILE_DATA_FROM_OBJ(dir, smbfile_data);
+  RB_SMBFILE_DATA_FROM_OBJ(smbdir, smbfile_data);
   DLIST_ADD(data->smbfile_data_list, smbfile_data);
 
-  return dir;
+  return smbdir;
 }
+
+static VALUE rb_smb_open(int argc, VALUE *argv, VALUE self)
+{
+  RB_SMB_DATA_FROM_OBJ(self, data);
+  VALUE argv_new[argc+1];
+  VALUE smbfile;
+
+  argv_new[0] = self;
+  memcpy(argv_new + 1, argv, sizeof(*argv) * argc);
+  smbfile = rb_class_new_instance(argc+1, argv_new, rb_cSMBFile);
+
+  RB_SMBFILE_DATA_FROM_OBJ(smbfile, smbfile_data);
+  DLIST_ADD(data->smbfile_data_list, smbfile_data);
+
+  return smbfile;
+}
+
 
 /* ====================================================================== */
 
@@ -242,11 +261,12 @@ void Init_smb(void)
   rb_define_method(rb_cSMB, "on_auth", rb_smb_on_auth, -1);
   rb_define_alias(rb_cSMB, "on_authentication", "on_auth");
   rb_define_method(rb_cSMB, "opendir", rb_smb_opendir, 1);
+  rb_define_method(rb_cSMB, "open", rb_smb_open, -1);
 
   /* Net::SMB::Error */
   rb_eSMBError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
 
-  /* Init_smbfile(); */
   Init_smbdir();
+  Init_smbfile();
 }
 
