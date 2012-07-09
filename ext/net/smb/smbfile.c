@@ -242,6 +242,23 @@ static VALUE rb_smbfile_rewind(VALUE self)
   return rb_smbfile_seek(self, SIZET2NUM(0), SEEK_SET);
 }
 
+static VALUE rb_smbfile_eof_p(VALUE self)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  if (data->buffer_used_size - data->buffer_pos > 0) {
+    return Qfalse;
+  }
+
+  rb_smbfile_read_by_data(data);
+
+  if (data->buffer_used_size - data->buffer_pos > 0) {
+    return Qfalse;
+  }
+
+  return Qtrue;
+}
+
 static void rb_smbfile_readable_p_by_data(RB_SMBFILE_DATA *data)
 {
   if (data->oflags & O_WRONLY) {
@@ -252,7 +269,7 @@ static void rb_smbfile_readable_p_by_data(RB_SMBFILE_DATA *data)
 static VALUE rb_smbfile_read(int argc, VALUE *argv, VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
-  size_t req_read_size;
+  ssize_t req_read_size;
   VALUE str = rb_str_new2("");
 
   rb_smbfile_readable_p_by_data(data);
@@ -261,23 +278,25 @@ static VALUE rb_smbfile_read(int argc, VALUE *argv, VALUE self)
     req_read_size = 0;
   }
   else {
-    req_read_size = NUM2SIZET(argv[0]);
+    req_read_size = NUM2SSIZET(argv[0]);
     if (req_read_size == 0) {
-      return str;
+      return str; /* Return empty string */
+    }
+    if (req_read_size < 0) {
+      rb_raise(rb_eArgError, "Negative length given: %zd", req_read_size);
     }
   }
 
   for (;;) {
-    size_t buffer_read_size = data->buffer_used_size - data->buffer_pos;
+    ssize_t buffer_read_size = data->buffer_used_size - data->buffer_pos;
 
     if (buffer_read_size == 0) {
       /* No remained data in buffer */
       rb_smbfile_read_by_data(data);
 
       if (data->eof) {
-	/* And no remained data in file */
-	return str;
-	/* Ruby 1.8 style: return (RSTRING_LEN(str) == 0) ? Qnil : str; */
+	/* No remained data in file */
+	return (req_read_size > 0 && RSTRING_LEN(str) == 0) ? Qnil : str;
       }
 
       buffer_read_size = data->buffer_used_size - data->buffer_pos;
@@ -313,6 +332,7 @@ void Init_smbfile(void)
   rb_define_alias(rb_cSMBFile, "pos", "tell");
   rb_define_method(rb_cSMBFile, "seek", rb_smbfile_seek, 2);
   rb_define_method(rb_cSMBFile, "rewind", rb_smbfile_rewind, 0);
+  rb_define_method(rb_cSMBFile, "eof?", rb_smbfile_eof_p, 0);
   rb_define_method(rb_cSMBFile, "read", rb_smbfile_read, -1);
 }
 

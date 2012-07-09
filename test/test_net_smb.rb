@@ -210,6 +210,41 @@ class SMBTest < Test::Unit::TestCase
       smbdir = smb.opendir(@share_public + '/' + @file_writeable)
     end
   end ## test_dir
+
+  def test_file
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      [@username, @password]
+    }
+
+    smbfile = smb.open(@share_public + '/' + @file_readable)
+    assert_raise(ArgumentError) do
+      smbfile.read(-1)
+    end
+    smbfile.close
+    assert_raise(IOError) do
+      smbfile.close
+    end
+  end
+
+  def test_file_eof
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      [@username, @password]
+    }
+
+    smbfile = smb.open(@share_public + '/' + @file_readable)
+
+    assert(smbfile.eof? != true)
+    assert_equal(@file_readable, smbfile.read)
+    assert(smbfile.eof? == true)
+
+    assert_equal("", smbfile.read)
+    assert_equal("", smbfile.read(0))
+    assert_nil(smbfile.read(1))
+
+    smbfile.close
+  end
 end
 
 end
