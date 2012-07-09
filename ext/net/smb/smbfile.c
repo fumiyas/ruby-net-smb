@@ -278,7 +278,7 @@ static VALUE rb_smbfile_read(int argc, VALUE *argv, VALUE self)
   rb_smbfile_readable_p_by_data(data);
 
   if (argc == 0) {
-    req_read_size = 0;
+    req_read_size = -1;
   }
   else {
     req_read_size = NUM2SSIZET(argv[0]);
@@ -290,7 +290,7 @@ static VALUE rb_smbfile_read(int argc, VALUE *argv, VALUE self)
     }
   }
 
-  for (;;) {
+  while (req_read_size) {
     ssize_t buffer_read_size = data->buffer_used_size - data->buffer_pos;
 
     if (buffer_read_size == 0) {
@@ -310,13 +310,12 @@ static VALUE rb_smbfile_read(int argc, VALUE *argv, VALUE self)
     }
 
     rb_str_cat(str, data->buffer + data->buffer_pos, buffer_read_size);
+
     data->pos += buffer_read_size;
     data->buffer_pos += buffer_read_size;
-    if (req_read_size == buffer_read_size) {
-      return str;
+    if (req_read_size > 0) {
+      req_read_size -= buffer_read_size;
     }
-
-    req_read_size -= buffer_read_size;
   }
 
   return str;
