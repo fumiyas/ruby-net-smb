@@ -247,12 +247,15 @@ static VALUE rb_smbfile_eof_p(VALUE self)
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
 
   if (data->buffer_used_size - data->buffer_pos > 0) {
+    /* Remained data exist in buffer */
     return Qfalse;
   }
 
+  /* Try to read from file to buffer */
   rb_smbfile_read_by_data(data);
 
   if (data->buffer_used_size - data->buffer_pos > 0) {
+    /* Remained data exist in buffer */
     return Qfalse;
   }
 
