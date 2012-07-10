@@ -105,6 +105,8 @@ static void rb_smb_data_free(RB_SMB_DATA *data)
 
   for (smbfile_data = data->smbfile_data_list; smbfile_data != NULL;
       smbfile_data = smbfile_data->next) {
+    smbfile_data->smb_obj = Qnil;
+    smbfile_data->smb_data = NULL;
     smbfile_data->smbcctx = NULL;
     smbfile_data->smbcfile = NULL;
   }

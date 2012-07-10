@@ -51,8 +51,7 @@ static void rb_smbdir_close_and_deref_by_data(RB_SMBFILE_DATA *data)
   data->smbcctx = NULL;
   data->smbcfile = NULL;
 
-  RB_SMB_DATA_FROM_OBJ(data->smb_obj, smb_data);
-  DLIST_REMOVE(smb_data->smbfile_data_list, data);
+  DLIST_REMOVE(data->smb_data->smbfile_data_list, data);
 }
 
 static void rb_smbdir_data_free(RB_SMBFILE_DATA *data)
@@ -87,6 +86,7 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
   data->enc = rb_enc_find("UTF-8");
 
   data->smb_obj = smb_obj;
+  data->smb_data = smb_data;
   data->smbcctx = smb_data->smbcctx;
 
   fn = smbc_getFunctionOpendir(data->smbcctx);

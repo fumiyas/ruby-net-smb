@@ -52,8 +52,7 @@ static void rb_smbfile_close_and_deref_by_data(RB_SMBFILE_DATA *data)
   data->smbcctx = NULL;
   data->smbcfile = NULL;
 
-  RB_SMB_DATA_FROM_OBJ(data->smb_obj, smb_data);
-  DLIST_REMOVE(smb_data->smbfile_data_list, data);
+  DLIST_REMOVE(data->smb_data->smbfile_data_list, data);
 }
 
 static void rb_smbfile_data_free(RB_SMBFILE_DATA *data)
@@ -172,6 +171,7 @@ static VALUE rb_smbfile_initialize(int argc, VALUE *argv, VALUE self)
   }
 
   data->smb_obj = smb_obj;
+  data->smb_data = smb_data;
   data->smbcctx = smb_data->smbcctx;
 
   data->buffer = ruby_xmalloc(RB_SMBFILE_BUFFER_SIZE);

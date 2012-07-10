@@ -44,6 +44,7 @@ typedef struct rb_smbfile_data	RB_SMBFILE_DATA;
 struct rb_smbfile_data {
   rb_encoding	*enc;
   VALUE         smb_obj;	/* Net::SMB object */
+  RB_SMB_DATA	*smb_data;
   SMBCCTX	*smbcctx;
   SMBCFILE	*smbcfile;
   char		*url;
