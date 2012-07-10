@@ -32,65 +32,65 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
 	char *password, int pwmaxlen)
 {
   VALUE self = (VALUE)smbc_getOptionUserData(smbcctx);
-  VALUE ary;
-  VALUE wg;
-  VALUE un;
-  VALUE pw;
+  VALUE cred_obj;
+  VALUE workgroup_obj;
+  VALUE username_obj;
+  VALUE password_obj;
   RB_SMB_DATA_FROM_OBJ(self, data);
 
   if (NIL_P(data->auth_callback)) {
     return;
   }
 
-  ary = rb_funcall(data->auth_callback,
+  cred_obj = rb_funcall(data->auth_callback,
     rb_intern("call"), 2,
     rb_str_new2(server),
     rb_str_new2(share));
 
-  if (TYPE(ary) != T_ARRAY) {
+  if (TYPE(cred_obj) != T_ARRAY) {
     rb_raise(rb_eTypeError,
 	RB_SMB_NAME
 	"#on_auth proc must return an array of username, passsword, and optional workgroup name");
   }
-  if (RARRAY_LEN(ary) < 2 || RARRAY_LEN(ary) > 3) {
+  if (RARRAY_LEN(cred_obj) < 2 || RARRAY_LEN(cred_obj) > 3) {
     rb_raise(rb_eArgError,
 	RB_SMB_NAME
 	"#on_auth proc must return an array of username, passsword, and optional workgroup name");
   }
 
-  un = RARRAY_PTR(ary)[0];
-  pw = RARRAY_PTR(ary)[1];
-  wg = (RARRAY_LEN(ary) >= 3) ? RARRAY_PTR(ary)[2] : Qnil;
+  username_obj = RARRAY_PTR(cred_obj)[0];
+  password_obj = RARRAY_PTR(cred_obj)[1];
+  workgroup_obj = (RARRAY_LEN(cred_obj) >= 3) ? RARRAY_PTR(cred_obj)[2] : Qnil;
 
-  if (!NIL_P(wg)) {
-    SafeStringValue(wg);
-    if (RSTRING_LEN(wg) > wgmaxlen - 1) {
+  if (!NIL_P(workgroup_obj)) {
+    SafeStringValue(workgroup_obj);
+    if (RSTRING_LEN(workgroup_obj) > wgmaxlen - 1) {
       rb_raise(rb_eArgError, "Workgroup name too long");
     }
-    strcpy(workgroup, RSTRING_PTR(wg));
+    strcpy(workgroup, RSTRING_PTR(workgroup_obj));
   }
   else {
-    strcpy(workgroup, "");
+    workgroup[0] = '\0';
   }
-  if (!NIL_P(un)) {
-    SafeStringValue(un);
-    if (RSTRING_LEN(un) > unmaxlen - 1) {
+  if (!NIL_P(username_obj)) {
+    SafeStringValue(username_obj);
+    if (RSTRING_LEN(username_obj) > unmaxlen - 1) {
       rb_raise(rb_eArgError, "Username too long");
     }
-    strcpy(username, RSTRING_PTR(un));
+    strcpy(username, RSTRING_PTR(username_obj));
   }
   else {
-    strcpy(username, "");
+    username[0] = '\0';
   }
-  if (!NIL_P(pw)) {
-    SafeStringValue(pw);
-    if (RSTRING_LEN(pw) > pwmaxlen - 1) {
+  if (!NIL_P(password_obj)) {
+    SafeStringValue(password_obj);
+    if (RSTRING_LEN(password_obj) > pwmaxlen - 1) {
       rb_raise(rb_eArgError, "Password too long");
     }
-    strcpy(password, RSTRING_PTR(pw));
+    strcpy(password, RSTRING_PTR(password_obj));
   }
   else {
-    strcpy(password, "");
+    password[0] = '\0';
   }
 }
 
