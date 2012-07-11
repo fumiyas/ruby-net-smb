@@ -210,7 +210,7 @@ static VALUE rb_smbfile_tell(VALUE self)
 static VALUE rb_smbfile_seek(VALUE self, VALUE offset_num, VALUE whence_num)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
-  off_t offset = (off_t)NUM2SIZET(offset_num);
+  off_t offset = NUM2OFFT(offset_num);
   int whence = NUM2INT(whence_num);
 
   switch (whence) {
@@ -239,7 +239,7 @@ static VALUE rb_smbfile_seek(VALUE self, VALUE offset_num, VALUE whence_num)
 
 static VALUE rb_smbfile_rewind(VALUE self)
 {
-  return rb_smbfile_seek(self, SIZET2NUM(0), SEEK_SET);
+  return rb_smbfile_seek(self, OFFT2NUM(0), INT2NUM(SEEK_SET));
 }
 
 static VALUE rb_smbfile_eof_p(VALUE self)
