@@ -92,6 +92,8 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   else {
     password[0] = '\0';
   }
+
+  RB_SMB_DEBUG("\\%s\%s %s\%s|%s\n", server, share, workgroup, username, password);
 }
 
 static void rb_smb_data_gc_mark(RB_SMB_DATA *data)

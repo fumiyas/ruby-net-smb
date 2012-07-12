@@ -46,16 +46,22 @@ static void rb_smbdir_close_by_data(RB_SMBFILE_DATA *data)
 
 static void rb_smbdir_close_and_deref_by_data(RB_SMBFILE_DATA *data)
 {
+  RB_SMB_DEBUG("data=%p smbcctx=%p smbcfile=%p\n", data, data->smbcctx, data->smbcfile);
+
   rb_smbdir_close_by_data(data);
 
   data->smbcctx = NULL;
   data->smbcfile = NULL;
 
   DLIST_REMOVE(data->smb_data->smbfile_data_list, data);
+
+  RB_SMB_DEBUG("smbfile_data_list=%p smbfile_data=%p\n", data->smb_data->smbfile_data_list, data);
 }
 
 static void rb_smbdir_data_free(RB_SMBFILE_DATA *data)
 {
+  RB_SMB_DEBUG("data=%p smbcctx=%p smbcfile=%p\n", data, data->smbcctx, data->smbcfile);
+
   if (data->smbcfile != NULL) {
     rb_smbdir_close_and_deref_by_data(data);
   }
@@ -81,6 +87,12 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
   smbc_opendir_fn fn;
   const char *url = StringValueCStr(url_obj);
 
+  fn = smbc_getFunctionOpendir(smb_data->smbcctx);
+  data->smbcfile = (*fn)(smb_data->smbcctx, url);
+  if (data->smbcfile == NULL) {
+    rb_sys_fail("SMBC_opendir_ctx() failed");
+  }
+
   /* FIXME: Take encoding from argument */
   /* FIXME: Read unix charset (?) from smb.conf for default encoding */
   data->enc = rb_enc_find("UTF-8");
@@ -89,11 +101,7 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
   data->smb_data = smb_data;
   data->smbcctx = smb_data->smbcctx;
 
-  fn = smbc_getFunctionOpendir(data->smbcctx);
-  data->smbcfile = (*fn)(data->smbcctx, url);
-  if (data->smbcfile == NULL) {
-    rb_sys_fail("SMBC_opendir_ctx() failed");
-  }
+  RB_SMB_DEBUG("smbcctx=%p smbcfile=%p\n", data->smbcctx, data->smbcfile);
 
   return self;
 }
@@ -108,6 +116,8 @@ static VALUE rb_smbdir_smb(VALUE self)
 static VALUE rb_smbdir_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  RB_SMB_DEBUG("data=%p smbcctx=%p smbcfile=%p\n", data, data->smbcctx, data->smbcfile);
 
   rb_smbdir_close_and_deref_by_data(data);
 

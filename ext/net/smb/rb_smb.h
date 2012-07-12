@@ -23,6 +23,18 @@
 #include <ruby/encoding.h>
 #include <libsmbclient.h>
 
+#ifdef RB_SMB_DEBUG
+#  undef RB_SMB_DEBUG
+#  define RB_SMB_DEBUG(fmt, ...) \
+    do { \
+      fprintf(stdout, "%s:%s:%d ", __FILE__, __func__, __LINE__); \
+      fprintf(stdout, fmt, __VA_ARGS__); \
+      fflush(stdout); \
+    } while (0)
+#else
+#  define RB_SMB_DEBUG(fmt, ...)
+#endif
+
 #define SMBC_TRUE	((smbc_bool)1)
 #define SMBC_FALSE	((smbc_bool)0)
 

@@ -57,6 +57,8 @@ static void rb_smbfile_close_and_deref_by_data(RB_SMBFILE_DATA *data)
 
 static void rb_smbfile_data_free(RB_SMBFILE_DATA *data)
 {
+  RB_SMB_DEBUG("smbcctx=%p smbcfile=%p\n", data->smbcctx, data->smbcfile);
+
   if (data->smbcfile != NULL) {
     rb_smbfile_close_and_deref_by_data(data);
   }
@@ -85,6 +87,8 @@ static void rb_smbfile_open_by_data(RB_SMBFILE_DATA *data)
   if (data->smbcfile == NULL) {
     rb_sys_fail("SMBC_open_ctx() failed");
   }
+
+  RB_SMB_DEBUG("smbcctx=%p smbcfile=%p\n", data->smbcctx, data->smbcfile);
 }
 
 static void rb_smbfile_seek_by_data(RB_SMBFILE_DATA *data)
@@ -194,6 +198,8 @@ static VALUE rb_smbfile_smb(VALUE self)
 static VALUE rb_smbfile_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  RB_SMB_DEBUG("data=%p smbcctx=%p smbcfile=%p\n", data, data->smbcctx, data->smbcfile);
 
   rb_smbfile_close_and_deref_by_data(data);
 
