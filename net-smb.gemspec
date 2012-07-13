@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.authors     = ["SATOH Fumiyasu"]
   s.email       = ["fumiyas@osstech.co.jp"]
   s.homepage    = "https://github.com/fumiyas/ruby-net-smb"
-  s.summary     = %q{SMB/CIFS client}
-  s.description = %q{SMB/CIFS client}
+  s.summary     = %q{SMB/CIFS client (Samba libsmbclient binding)}
+  s.description = %q{SMB/CIFS client (Samba libsmbclient binding)}
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
