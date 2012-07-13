@@ -280,7 +280,7 @@ class SMBTest < Test::Unit::TestCase
     end
   end ## test_file_open_read_close
 
-  def test_file_read
+  def test_file_read_sequential
     smb = Net::SMB.new
     smb.on_auth {|server, share|
       [@username, @password]
@@ -290,18 +290,19 @@ class SMBTest < Test::Unit::TestCase
     smbfile = smb.open(@share_public + '/' + @file_large)
 
     buffer_size = 8192
-    1.upto(buffer_size * 4) do |read_size|
+    1.upto(buffer_size * 3) do |read_size|
       file.rewind
       smbfile.rewind
-      (buffer_size / read_size * 3).times do |n|
+      (buffer_size / read_size * 4).times do |n|
 	file_data = file.read(read_size)
 	smbfile_data = smbfile.read(read_size)
 	assert_equal(file_data, smbfile_data, "read_size #{read_size}, n=#{n}")
+	assert_equal(file.pos, smbfile.pos, "read_size #{read_size}, n=#{n}")
       end
     end
 
     smbfile.close
-  end ## test_file_read
+  end ## test_file_read_sequential
 
   def test_file_read_eof
     smb = Net::SMB.new
