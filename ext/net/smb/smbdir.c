@@ -80,6 +80,8 @@ static VALUE rb_smbdir_data_alloc(VALUE klass)
   return Data_Wrap_Struct(klass, rb_smbdir_data_gc_mark, rb_smbdir_data_free, data);
 }
 
+static VALUE rb_smbdir_close(VALUE self);
+
 static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -102,6 +104,11 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
   data->smbcctx = smb_data->smbcctx;
 
   RB_SMB_DEBUG("smbcctx=%p smbcfile=%p\n", data->smbcctx, data->smbcfile);
+
+  if (rb_block_given_p()) {
+    rb_ensure(rb_yield, self, rb_smbdir_close, self);
+    return Qnil;
+  }
 
   return self;
 }

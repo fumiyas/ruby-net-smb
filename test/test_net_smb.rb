@@ -16,6 +16,7 @@ class SMBTest < Test::Unit::TestCase
     @smb_conf = ENV['TEST_SMB_CONF'] ||= @test_dir + "/etc/smb.conf"
     @smbd = ENV['TEST_SMBD'] ||= "smbd"
     @pdbedit = ENV['TEST_PDBEDIT'] ||= "pdbedit"
+    @smbstatus = ENV['TEST_SMBSTATUS'] ||= "smbstatus"
     @samba_debug_level = ENV['TEST_SAMBA_DEBUGLEVEL'] ||= "10"
     @samba_log_dir = ENV['TEST_SAMBA_LOG_DIR'] ||= @test_dir + "/log"
     @samba_var_dir = ENV['TEST_SAMBA_VAR_DIR'] ||= @samba_log_dir + "/var"
@@ -112,6 +113,21 @@ class SMBTest < Test::Unit::TestCase
   def teardown
   end
 
+  def smbstatus
+    smbstatus_r, smbstatus_w = IO.pipe
+    smbstatus_pid = Kernel.spawn(
+      @smbstatus, "--configfile", @smb_conf, "--shares",
+      :out => smbstatus_w,
+      :err => [@samba_log_dir + '/smbstatus.log', 'w+'],
+    )
+    smbstatus_w.close
+    smbstatus_r.readline
+    smbstatus_r.readline
+    smbstatus_r.readline
+
+    return smbstatus_r
+  end
+
   def test_auth
     smb = Net::SMB.new
     smb.on_auth {|server, share|
@@ -155,9 +171,7 @@ class SMBTest < Test::Unit::TestCase
     end
   end
 
-  def test_dir
-    dents_all = [".", "..", *@dirs, *@files]
-
+  def test_dir_open_close
     smb = Net::SMB.new
     smb.on_auth {|server, share|
       [@username, @password]
@@ -169,6 +183,27 @@ class SMBTest < Test::Unit::TestCase
     assert_raise(IOError) do
       smbdir.close
     end
+
+    assert_raise(Errno::ENOENT) do
+      smbdir = smb.opendir(@share_public + '/' + @dir_noexist)
+    end
+    assert_raise(Errno::EACCES) do
+      smbdir = smb.opendir(@share_public + '/' + @dir_noaccess)
+    end
+    ## Errno::ENOENT is not expected, but Samba 3.5 and 3.6 has a bug:
+    ## https://bugzilla.samba.org/show_bug.cgi?id=9021
+    assert_raise(Errno::ENOTDIR, Errno::ENOENT) do
+      smbdir = smb.opendir(@share_public + '/' + @file_writeable)
+    end
+  end ## test_dir_open_close
+
+  def test_dir_read
+    dents_all = [".", "..", *@dirs, *@files]
+
+    smb = Net::SMB.new
+    smb.on_auth {|server, share|
+      [@username, @password]
+    }
 
     smbdir = smb.opendir(@share_private)
     smbdir_pos = [smbdir.pos]
@@ -188,6 +223,16 @@ class SMBTest < Test::Unit::TestCase
     end
     assert_empty(dents)
 
+    smbdir.close
+
+    smb.opendir(@share_public) do |smbdir|
+      dents = dents_all.clone
+      while fname = smbdir.read
+	assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+      end
+      assert_empty(dents)
+    end
+
     smbdir = smb.opendir(@share_private)
     dents = dents_all.clone
     smbdir.each do |fname|
@@ -206,19 +251,7 @@ class SMBTest < Test::Unit::TestCase
       smbdir_enum.next
     end
     assert_empty(dents)
-
-    assert_raise(Errno::ENOENT) do
-      smbdir = smb.opendir(@share_public + '/' + @dir_noexist)
-    end
-    assert_raise(Errno::EACCES) do
-      smbdir = smb.opendir(@share_public + '/' + @dir_noaccess)
-    end
-    ## Errno::ENOENT is not expected, but Samba 3.5 and 3.6 has a bug:
-    ## https://bugzilla.samba.org/show_bug.cgi?id=9021
-    assert_raise(Errno::ENOTDIR, Errno::ENOENT) do
-      smbdir = smb.opendir(@share_public + '/' + @file_writeable)
-    end
-  end ## test_dir
+  end ## test_dir_read
 
   def test_file_open_read_close
     smb = Net::SMB.new
