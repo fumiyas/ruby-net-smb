@@ -277,6 +277,33 @@ void Init_smb(void)
   /* Net::SMB::Error */
   rb_eSMBError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
 
+  const char *smbc_ver = smbc_version();
+  int smbc_ver_major = atoi(smbc_ver);
+  int smbc_ver_minor = (smbc_ver = strchr(smbc_ver, '.')) ? atoi(++smbc_ver) : 0;
+  int smbc_ver_release = (smbc_ver = strchr(smbc_ver, '.')) ? atoi(++smbc_ver) : 0;
+  long smbc_ver_number =
+      (smbc_ver_major << 16) +
+      (smbc_ver_minor << 8) +
+      smbc_ver_release;
+
+  if (smbc_ver_number <= 0x030606L) {
+    /*
+     * Hack to avoid Samba Bug 9038 - libsmbclient: SMBC_module_init()
+     * does not init global parameters if $HOME is not set
+     * https://bugzilla.samba.org/show_bug.cgi?id=9038
+     */
+    const char *home_backup = getenv("HOME");
+    /* Unset $HOME to ignore $HOME/.smb/smb.conf */
+    if (home_backup) {
+      unsetenv("HOME");
+    }
+    SMBCCTX *smbcctx = smbc_new_context();
+    if (home_backup) {
+      setenv("HOME", home_backup, 1);
+    }
+    smbc_init_context(smbcctx);
+  }
+
   Init_smbdir();
   Init_smbfile();
 }
