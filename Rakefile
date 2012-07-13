@@ -16,6 +16,7 @@ Rake::TestTask.new
 CLEAN.include('ext/**/*.{log,o,so}')
 CLEAN.include('ext/**/Makefile')
 CLEAN.include('lib/**/*.so')
+CLOBBER.include('pkg/*')
 CLOBBER.include('test/log')
 CLOBBER.include('test/log.[0-9]')
 
