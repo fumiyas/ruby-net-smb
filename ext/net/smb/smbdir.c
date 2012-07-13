@@ -20,6 +20,7 @@
 #include "rb_smb.h"
 #include "dlinklist.h"
 
+#include <ruby/util.h>
 #include <errno.h>
 
 VALUE rb_cSMBDir;
@@ -66,6 +67,7 @@ static void rb_smbdir_data_free(RB_SMBFILE_DATA *data)
     rb_smbdir_close_and_deref_by_data(data);
   }
 
+  ruby_xfree(data->url);
   ruby_xfree(data);
 }
 
@@ -102,6 +104,7 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
   data->smb_obj = smb_obj;
   data->smb_data = smb_data;
   data->smbcctx = smb_data->smbcctx;
+  data->url = ruby_strdup(url);
 
   RB_SMB_DEBUG("smbcctx=%p smbcfile=%p\n", data->smbcctx, data->smbcfile);
 
@@ -118,6 +121,13 @@ static VALUE rb_smbdir_smb(VALUE self)
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
 
   return data->smb_obj;
+}
+
+static VALUE rb_smbdir_url(VALUE self)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  return rb_str_new2(data->url);
 }
 
 static VALUE rb_smbdir_close(VALUE self)
@@ -214,6 +224,7 @@ void Init_smbdir(void)
   rb_define_alloc_func(rb_cSMBDir, rb_smbdir_data_alloc);
   rb_define_method(rb_cSMBDir, "initialize", rb_smbdir_initialize, 2);
   rb_define_method(rb_cSMBDir, "smb", rb_smbdir_smb, 0);
+  rb_define_method(rb_cSMBDir, "url", rb_smbdir_url, 0);
   rb_define_method(rb_cSMBDir, "close", rb_smbdir_close, 0);
   rb_define_method(rb_cSMBDir, "tell", rb_smbdir_tell, 0);
   rb_define_alias(rb_cSMBDir, "pos", "tell");

@@ -179,6 +179,7 @@ class SMBTest < Test::Unit::TestCase
 
     smbdir = smb.opendir(@share_public)
     assert_equal(smb.object_id, smbdir.smb.object_id)
+    assert_equal(@share_public, smbdir.url)
     smbdir.close
     assert_raise(IOError) do
       smbdir.close
@@ -260,7 +261,10 @@ class SMBTest < Test::Unit::TestCase
     }
 
     @files_readable.each do |filename|
-      smbfile = smb.open(@share_public + '/' + filename)
+      url = @share_public + '/' + filename
+      smbfile = smb.open(url)
+
+      assert_equal(url, smbfile.url)
 
       assert_raise(ArgumentError) do
 	smbfile.read(-1)

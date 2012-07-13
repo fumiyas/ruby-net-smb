@@ -20,6 +20,7 @@
 #include "rb_smb.h"
 #include "dlinklist.h"
 
+#include <ruby/util.h>
 #include <ruby/io.h>
 #include <errno.h>
 
@@ -63,8 +64,8 @@ static void rb_smbfile_data_free(RB_SMBFILE_DATA *data)
     rb_smbfile_close_and_deref_by_data(data);
   }
 
-  ruby_xfree(data->buffer);
   ruby_xfree(data->url);
+  ruby_xfree(data->buffer);
   ruby_xfree(data);
 }
 
@@ -177,11 +178,10 @@ static VALUE rb_smbfile_initialize(int argc, VALUE *argv, VALUE self)
   data->smb_obj = smb_obj;
   data->smb_data = smb_data;
   data->smbcctx = smb_data->smbcctx;
+  data->url = ruby_strdup(RSTRING_PTR(url_obj));
 
   data->buffer = ruby_xmalloc(RB_SMBFILE_BUFFER_SIZE);
   data->buffer_size = RB_SMBFILE_BUFFER_SIZE;
-  data->url = ruby_xmalloc(RSTRING_LEN(url_obj) + 1);
-  strcpy(data->url, StringValueCStr(url_obj));
 
   rb_smbfile_open_by_data(data);
 
@@ -193,6 +193,13 @@ static VALUE rb_smbfile_smb(VALUE self)
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
 
   return data->smb_obj;
+}
+
+static VALUE rb_smbfile_url(VALUE self)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  return rb_str_new2(data->url);
 }
 
 static VALUE rb_smbfile_close(VALUE self)
@@ -335,6 +342,7 @@ void Init_smbfile(void)
   rb_define_alloc_func(rb_cSMBFile, rb_smbfile_data_alloc);
   rb_define_method(rb_cSMBFile, "initialize", rb_smbfile_initialize, -1);
   rb_define_method(rb_cSMBFile, "smb", rb_smbfile_smb, 0);
+  rb_define_method(rb_cSMBFile, "url", rb_smbfile_url, 0);
   rb_define_method(rb_cSMBFile, "close", rb_smbfile_close, 0);
   rb_define_method(rb_cSMBFile, "tell", rb_smbfile_tell, 0);
   rb_define_alias(rb_cSMBFile, "pos", "tell");
