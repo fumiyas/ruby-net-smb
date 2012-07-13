@@ -91,8 +91,9 @@ class SMBTest < Test::Unit::TestCase
     end
 
     File.open(@share_dir + '/' + @file_large, "wb", 0660) do |file|
-      1000000.times do |n|
-	file.write("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09")
+      random_chars = (0...100).map { rand(256).chr }.join("")
+      100000.times do |n|
+	file.write(random_chars)
       end
     end
 
@@ -240,7 +241,7 @@ class SMBTest < Test::Unit::TestCase
 	smbfile.close
       end
     end
-  end
+  end ## test_file_open_read_close
 
   def test_file_read
     smb = Net::SMB.new
@@ -251,18 +252,19 @@ class SMBTest < Test::Unit::TestCase
     file = File.open(@share_dir + '/' + @file_large)
     smbfile = smb.open(@share_public + '/' + @file_large)
 
-    1.upto(10000) do |read_size|
+    buffer_size = 8192
+    1.upto(buffer_size * 4) do |read_size|
       file.rewind
       smbfile.rewind
-      100.times do |n|
+      (buffer_size / read_size * 3).times do |n|
 	file_data = file.read(read_size)
 	smbfile_data = smbfile.read(read_size)
-	assert_equal(file_data, smbfile_data)
+	assert_equal(file_data, smbfile_data, "read_size #{read_size}, n=#{n}")
       end
     end
 
     smbfile.close
-  end
+  end ## test_file_read
 
   def test_file_read_eof
     smb = Net::SMB.new
@@ -281,7 +283,7 @@ class SMBTest < Test::Unit::TestCase
     assert_nil(smbfile.read(1))
 
     smbfile.close
-  end
+  end ## test_file_read_eof
 end
 
 end
