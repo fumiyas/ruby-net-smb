@@ -202,6 +202,11 @@ static VALUE rb_smbfile_url(VALUE self)
   return rb_str_new2(data->url);
 }
 
+static VALUE rb_smbfile_read_buffer_size(VALUE self)
+{
+  return INT2NUM(RB_SMBFILE_BUFFER_SIZE);
+}
+
 static VALUE rb_smbfile_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -343,6 +348,7 @@ void Init_smbfile(void)
   rb_define_method(rb_cSMBFile, "initialize", rb_smbfile_initialize, -1);
   rb_define_method(rb_cSMBFile, "smb", rb_smbfile_smb, 0);
   rb_define_method(rb_cSMBFile, "url", rb_smbfile_url, 0);
+  rb_define_method(rb_cSMBFile, "read_buffer_size", rb_smbfile_read_buffer_size, 0);
   rb_define_method(rb_cSMBFile, "close", rb_smbfile_close, 0);
   rb_define_method(rb_cSMBFile, "tell", rb_smbfile_tell, 0);
   rb_define_alias(rb_cSMBFile, "pos", "tell");

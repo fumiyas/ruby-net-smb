@@ -289,8 +289,15 @@ class SMBTest < Test::Unit::TestCase
     file = File.open(@share_dir + '/' + @file_large)
     smbfile = smb.open(@share_public + '/' + @file_large)
 
-    buffer_size = 8192
-    1.upto(buffer_size * 3) do |read_size|
+    buffer_size = smbfile.read_buffer_size
+    [
+      1..16,
+      (buffer_size/3-16)..(buffer_size/3+16),
+      (buffer_size/2-16)..(buffer_size/2+16),
+      (buffer_size  -16)..(buffer_size  +16),
+      (buffer_size*2-16)..(buffer_size*2+16),
+      (buffer_size*3-16)..(buffer_size*3+16),
+    ].each do |read_size_range| read_size_range.each do |read_size|
       file.rewind
       smbfile.rewind
       (buffer_size / read_size * 4).times do |n|
@@ -299,7 +306,7 @@ class SMBTest < Test::Unit::TestCase
 	assert_equal(file_data, smbfile_data, "read_size #{read_size}, n=#{n}")
 	assert_equal(file.pos, smbfile.pos, "read_size #{read_size}, n=#{n}")
       end
-    end
+    end end
 
     smbfile.close
   end ## test_file_read_sequential
