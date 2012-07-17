@@ -128,6 +128,15 @@ class SMBTest < Test::Unit::TestCase
     return smbstatus_r
   end
 
+  def smb
+    smb = Net::SMB.new
+    smb.auth_callback {|server, share|
+      [@username, @password]
+    }
+
+    return smb
+  end
+
   def test_auth
     smb = Net::SMB.new
     smb.auth_callback {|server, share|
@@ -172,10 +181,7 @@ class SMBTest < Test::Unit::TestCase
   end
 
   def test_dir_open_close
-    smb = Net::SMB.new
-    smb.auth_callback {|server, share|
-      [@username, @password]
-    }
+    smb = self.smb
 
     smbdir = smb.opendir(@share_public)
     assert_equal(smb.object_id, smbdir.smb.object_id)
@@ -199,31 +205,15 @@ class SMBTest < Test::Unit::TestCase
   end ## test_dir_open_close
 
   def test_dir_read
+    smb = self.smb
     dents_all = [".", "..", *@dirs, *@files]
 
-    smb = Net::SMB.new
-    smb.auth_callback {|server, share|
-      [@username, @password]
-    }
-
     smbdir = smb.opendir(@share_private)
-    smbdir_pos = [smbdir.pos]
     dents = dents_all.clone
     while fname = smbdir.read
-      smbdir_pos << smbdir.pos
       assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
     end
     assert_empty(dents)
-
-    smbdir.rewind
-    assert_equal(smbdir_pos.shift, smbdir.tell)
-    dents = dents_all.clone
-    while fname = smbdir.read
-      assert_equal(smbdir_pos.shift, smbdir.tell)
-      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
-    end
-    assert_empty(dents)
-
     smbdir.close
 
     smb.opendir(@share_public) do |smbdir|
@@ -233,6 +223,56 @@ class SMBTest < Test::Unit::TestCase
       end
       assert_empty(dents)
     end
+  end ## test_dir_read
+
+  def test_dir_seek
+    smb = self.smb
+    dents_all = [".", "..", *@dirs, *@files]
+
+    smbdir = smb.opendir(@share_private)
+
+    smbdir_pos_all = Array.new
+    fname_by_pos = Hash.new
+    loop do
+      pos = smbdir.pos
+      smbdir_pos_all << pos
+      fname = smbdir.read
+      fname_by_pos[pos] = fname
+      break unless fname
+    end
+
+    smbdir.rewind
+    dents = dents_all.clone
+    smbdir_pos = smbdir_pos_all.clone
+    loop do
+      pos = smbdir.pos
+      assert_equal(smbdir_pos.shift, pos)
+      unless fname = smbdir.read
+	break
+      end
+      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+      assert_equal(fname_by_pos[pos], fname, "Unexpected directory entry: #{fname} #{pos}")
+    end
+    assert_empty(dents)
+
+    smbdir_pos_all.each do |pos|
+      smbdir.seek(pos)
+      fname = smbdir.read
+      assert_equal(fname_by_pos[pos], fname, "Unexpected directory entry: #{fname} #{pos}")
+    end
+
+    smbdir_pos_all.reverse.each do |pos|
+      smbdir.seek(pos)
+      fname = smbdir.read
+      assert_equal(fname_by_pos[pos], fname, "Unexpected directory entry: #{fname} #{pos}")
+    end
+
+    smbdir.close
+  end ## test_dir_seek
+
+  def test_dir_enum
+    smb = self.smb
+    dents_all = [".", "..", *@dirs, *@files]
 
     smbdir = smb.opendir(@share_private)
     dents = dents_all.clone
@@ -240,6 +280,7 @@ class SMBTest < Test::Unit::TestCase
       assert(dents.delete(fname) != nil)
     end
     assert_empty(dents)
+    smbdir.close
 
     smbdir = smb.opendir(@share_private)
     dents = dents_all.clone
@@ -252,13 +293,11 @@ class SMBTest < Test::Unit::TestCase
       smbdir_enum.next
     end
     assert_empty(dents)
-  end ## test_dir_read
+    smbdir.close
+  end ## test_dir_enum
 
   def test_file_open_read_close
-    smb = Net::SMB.new
-    smb.auth_callback {|server, share|
-      [@username, @password]
-    }
+    smb = self.smb
 
     @files_readable.each do |filename|
       url = @share_public + '/' + filename
@@ -281,10 +320,7 @@ class SMBTest < Test::Unit::TestCase
   end ## test_file_open_read_close
 
   def test_file_read_sequential
-    smb = Net::SMB.new
-    smb.auth_callback {|server, share|
-      [@username, @password]
-    }
+    smb = self.smb
 
     file = File.open(@share_dir + '/' + @file_large)
     smbfile = smb.open(@share_public + '/' + @file_large)
@@ -312,10 +348,7 @@ class SMBTest < Test::Unit::TestCase
   end ## test_file_read_sequential
 
   def test_file_read_eof
-    smb = Net::SMB.new
-    smb.auth_callback {|server, share|
-      [@username, @password]
-    }
+    smb = self.smb
 
     smbfile = smb.open(@share_public + '/' + @file_readable)
 
