@@ -207,6 +207,8 @@ static VALUE rb_smbdir_each(VALUE self)
 {
   VALUE name;
 
+  rb_smbdir_rewind(self);
+
   RETURN_ENUMERATOR(self, 0, 0);
 
   while (!NIL_P(name = rb_smbdir_read(self))) {

@@ -284,6 +284,16 @@ class SMBTest < Test::Unit::TestCase
 
     smbdir = smb.opendir(@share_private)
     dents = dents_all.clone
+    smbdir.read
+    smbdir.read
+    smbdir.each do |fname|
+      assert(dents.delete(fname) != nil)
+    end
+    assert_empty(dents)
+    smbdir.close
+
+    smbdir = smb.opendir(@share_private)
+    dents = dents_all.clone
     smbdir_enum = smbdir.each
     dents.size.times do |n|
       fname = smbdir_enum.next
