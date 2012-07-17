@@ -130,7 +130,7 @@ class SMBTest < Test::Unit::TestCase
 
   def test_auth
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username, @password]
     }
     assert_nothing_raised do
@@ -139,7 +139,7 @@ class SMBTest < Test::Unit::TestCase
     end
 
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username, 'invalid-password']
     }
     assert_raise(Errno::EPERM) do
@@ -147,7 +147,7 @@ class SMBTest < Test::Unit::TestCase
     end
 
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       ['invalid-user', @password]
     }
     assert_raise(Errno::EACCES) do
@@ -155,7 +155,7 @@ class SMBTest < Test::Unit::TestCase
     end
 
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       'blah-blah'
     }
     assert_raise(TypeError) do
@@ -163,7 +163,7 @@ class SMBTest < Test::Unit::TestCase
     end
 
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username]
     }
     assert_raise(ArgumentError) do
@@ -173,7 +173,7 @@ class SMBTest < Test::Unit::TestCase
 
   def test_dir_open_close
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username, @password]
     }
 
@@ -202,7 +202,7 @@ class SMBTest < Test::Unit::TestCase
     dents_all = [".", "..", *@dirs, *@files]
 
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username, @password]
     }
 
@@ -256,7 +256,7 @@ class SMBTest < Test::Unit::TestCase
 
   def test_file_open_read_close
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username, @password]
     }
 
@@ -282,7 +282,7 @@ class SMBTest < Test::Unit::TestCase
 
   def test_file_read_sequential
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username, @password]
     }
 
@@ -306,7 +306,7 @@ class SMBTest < Test::Unit::TestCase
 
   def test_file_read_eof
     smb = Net::SMB.new
-    smb.on_auth {|server, share|
+    smb.auth_callback {|server, share|
       [@username, @password]
     }
 

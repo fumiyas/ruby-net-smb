@@ -50,12 +50,14 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   if (TYPE(cred_obj) != T_ARRAY) {
     rb_raise(rb_eTypeError,
 	RB_SMB_NAME
-	"#on_auth proc must return an array of username, passsword, and optional workgroup name");
+	"#auth_callback must return an array of username, "
+	"passsword, and optional workgroup name");
   }
   if (RARRAY_LEN(cred_obj) < 2 || RARRAY_LEN(cred_obj) > 3) {
     rb_raise(rb_eArgError,
 	RB_SMB_NAME
-	"#on_auth proc must return an array of username, passsword, and optional workgroup name");
+	"#auth_callback must return an array of username, "
+	"passsword, and optional workgroup name");
   }
 
   username_obj = RARRAY_PTR(cred_obj)[0];
@@ -197,7 +199,7 @@ static VALUE rb_smb_use_kerberos_set(VALUE self, VALUE flag)
   return flag;
 }
 
-static VALUE rb_smb_on_auth(int argc, VALUE* argv, VALUE self)
+static VALUE rb_smb_auth_callback(int argc, VALUE* argv, VALUE self)
 {
   RB_SMB_DATA_FROM_OBJ(self, data);
 
@@ -269,8 +271,8 @@ void Init_smb(void)
   rb_define_method(rb_cSMB, "debug=", rb_smb_debug_set, 1);
   rb_define_method(rb_cSMB, "use_kerberos", rb_smb_use_kerberos_get, 0);
   rb_define_method(rb_cSMB, "use_kerberos=", rb_smb_use_kerberos_set, 1);
-  rb_define_method(rb_cSMB, "on_auth", rb_smb_on_auth, -1);
-  rb_define_alias(rb_cSMB, "on_authentication", "on_auth");
+  rb_define_method(rb_cSMB, "auth_callback", rb_smb_auth_callback, -1);
+  rb_define_alias(rb_cSMB, "auth", "auth_callback");
   rb_define_method(rb_cSMB, "opendir", rb_smb_opendir, 1);
   rb_define_method(rb_cSMB, "open", rb_smb_open, -1);
 
