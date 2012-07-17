@@ -224,6 +224,7 @@ void Init_smbdir(void)
 {
   rb_cSMBDir = rb_define_class_under(rb_cSMB, "Dir", rb_cObject);
   rb_define_alloc_func(rb_cSMBDir, rb_smbdir_data_alloc);
+  rb_include_module(rb_cSMBDir, rb_mEnumerable);
   rb_define_method(rb_cSMBDir, "initialize", rb_smbdir_initialize, 2);
   rb_define_method(rb_cSMBDir, "smb", rb_smbdir_smb, 0);
   rb_define_method(rb_cSMBDir, "url", rb_smbdir_url, 0);
