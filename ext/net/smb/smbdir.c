@@ -200,7 +200,17 @@ static VALUE rb_smbdir_read(VALUE self)
     return Qnil;
   }
 
-  return rb_external_str_new_with_enc(smbcdent->name, strlen(smbcdent->name), data->enc);
+  VALUE args[4];
+  args[0] = rb_external_str_new_with_enc(smbcdent->name,
+      strlen(smbcdent->name), data->enc);
+  args[1] = INT2NUM(smbcdent->smbc_type);
+  args[2] = rb_str_new2(data->url);
+  rb_str_cat2(args[2], "/"); /* FIXME: Unless if the last char is not "/" */
+  rb_str_cat2(args[2], smbcdent->name); /* FIXME: Must be URL encoding */
+  args[3] = rb_str_new(smbcdent->comment, smbcdent->commentlen);
+  VALUE entry_obj = rb_class_new_instance(4, args, rb_cSMBDirEntry);
+
+  return entry_obj;
 }
 
 static VALUE rb_smbdir_each(VALUE self)
@@ -235,5 +245,15 @@ void Init_smbdir(void)
   rb_define_method(rb_cSMBDir, "rewind", rb_smbdir_rewind, 0);
   rb_define_method(rb_cSMBDir, "read", rb_smbdir_read, 0);
   rb_define_method(rb_cSMBDir, "each", rb_smbdir_each, 0);
+
+  rb_define_const(rb_cSMB, "SMBC_WORKGROUP", INT2FIX(SMBC_WORKGROUP));
+  rb_define_const(rb_cSMB, "SMBC_SERVER", INT2FIX(SMBC_SERVER));
+  rb_define_const(rb_cSMB, "SMBC_FILE_SHARE", INT2FIX(SMBC_FILE_SHARE));
+  rb_define_const(rb_cSMB, "SMBC_PRINTER_SHARE", INT2FIX(SMBC_PRINTER_SHARE));
+  rb_define_const(rb_cSMB, "SMBC_COMMS_SHARE", INT2FIX(SMBC_COMMS_SHARE));
+  rb_define_const(rb_cSMB, "SMBC_IPC_SHARE", INT2FIX(SMBC_IPC_SHARE));
+  rb_define_const(rb_cSMB, "SMBC_DIR", INT2FIX(SMBC_DIR));
+  rb_define_const(rb_cSMB, "SMBC_FILE", INT2FIX(SMBC_FILE));
+  rb_define_const(rb_cSMB, "SMBC_LINK", INT2FIX(SMBC_LINK));
 }
 

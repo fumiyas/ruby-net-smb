@@ -206,28 +206,30 @@ class SMBTest < Test::Unit::TestCase
 
   def test_dir_read
     smb = self.smb
-    dents_all = [".", "..", *@dirs, *@files]
+    dent_names_all = [".", "..", *@dirs, *@files]
 
     smbdir = smb.opendir(@share_private)
-    dents = dents_all.clone
-    while fname = smbdir.read
-      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+    dent_names = dent_names_all.clone
+    while dent = smbdir.read
+      assert_equal(dent.name, dent_names.delete(dent.name),
+	  "Unexpected directory entry: #{dent.name}")
     end
-    assert_empty(dents)
+    assert_empty(dent_names)
     smbdir.close
 
     smb.opendir(@share_public) do |smbdir|
-      dents = dents_all.clone
-      while fname = smbdir.read
-	assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+      dent_names = dent_names_all.clone
+      while dent = smbdir.read
+	assert_equal(dent.name, dent_names.delete(dent.name),
+	    "Unexpected directory entry: #{dent.name}")
       end
-      assert_empty(dents)
+      assert_empty(dent_names)
     end
   end ## test_dir_read
 
   def test_dir_seek
     smb = self.smb
-    dents_all = [".", "..", *@dirs, *@files]
+    dent_names_all = [".", "..", *@dirs, *@files]
 
     smbdir = smb.opendir(@share_private)
 
@@ -236,35 +238,41 @@ class SMBTest < Test::Unit::TestCase
     loop do
       pos = smbdir.pos
       smbdir_pos_all << pos
-      fname = smbdir.read
-      fname_by_pos[pos] = fname
-      break unless fname
+      dent = smbdir.read
+      fname_by_pos[pos] = dent ? dent.name : nil;
+      break unless dent
     end
 
     smbdir.rewind
-    dents = dents_all.clone
+    dent_names = dent_names_all.clone
     smbdir_pos = smbdir_pos_all.clone
     loop do
       pos = smbdir.pos
       assert_equal(smbdir_pos.shift, pos)
-      unless fname = smbdir.read
+      unless dent = smbdir.read
 	break
       end
-      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
-      assert_equal(fname_by_pos[pos], fname, "Unexpected directory entry: #{fname} #{pos}")
+      assert_equal(dent.name, dent_names.delete(dent.name),
+	  "Unexpected directory entry: #{dent.name}")
+      assert_equal(fname_by_pos[pos], dent.name,
+	  "Unexpected directory entry: #{dent.name} #{pos}")
     end
-    assert_empty(dents)
+    assert_empty(dent_names)
 
     smbdir_pos_all.each do |pos|
       smbdir.seek(pos)
-      fname = smbdir.read
-      assert_equal(fname_by_pos[pos], fname, "Unexpected directory entry: #{fname} #{pos}")
+      dent = smbdir.read
+      dent_name = dent ? dent.name : nil;
+      assert_equal(fname_by_pos[pos], dent_name,
+	  "Unexpected directory entry: #{dent_name} #{pos}")
     end
 
     smbdir_pos_all.reverse.each do |pos|
       smbdir.seek(pos)
-      fname = smbdir.read
-      assert_equal(fname_by_pos[pos], fname, "Unexpected directory entry: #{fname} #{pos}")
+      dent = smbdir.read
+      dent_name = dent ? dent.name : nil;
+      assert_equal(fname_by_pos[pos], dent_name,
+	  "Unexpected directory entry: #{dent_name} #{pos}")
     end
 
     smbdir.close
@@ -272,37 +280,38 @@ class SMBTest < Test::Unit::TestCase
 
   def test_dir_enum
     smb = self.smb
-    dents_all = [".", "..", *@dirs, *@files]
+    dent_names_all = [".", "..", *@dirs, *@files]
 
     smbdir = smb.opendir(@share_private)
-    dents = dents_all.clone
-    smbdir.each do |fname|
-      assert(dents.delete(fname) != nil)
+    dent_names = dent_names_all.clone
+    smbdir.each do |dent|
+      assert(dent_names.delete(dent.name) != nil)
     end
-    assert_empty(dents)
+    assert_empty(dent_names)
     smbdir.close
 
     smbdir = smb.opendir(@share_private)
-    dents = dents_all.clone
+    dent_names = dent_names_all.clone
     smbdir.read
     smbdir.read
-    smbdir.each do |fname|
-      assert(dents.delete(fname) != nil)
+    smbdir.each do |dent|
+      assert(dent_names.delete(dent.name) != nil)
     end
-    assert_empty(dents)
+    assert_empty(dent_names)
     smbdir.close
 
     smbdir = smb.opendir(@share_private)
-    dents = dents_all.clone
+    dent_names = dent_names_all.clone
     smbdir_enum = smbdir.each
-    dents.size.times do |n|
-      fname = smbdir_enum.next
-      assert_equal(fname, dents.delete(fname), "Unexpected directory entry: #{fname}")
+    dent_names.size.times do |n|
+      dent = smbdir_enum.next
+      assert_equal(dent.name, dent_names.delete(dent.name),
+	  "Unexpected directory entry: #{dent.name}")
     end
     assert_raise(StopIteration) do
       smbdir_enum.next
     end
-    assert_empty(dents)
+    assert_empty(dent_names)
     smbdir.close
   end ## test_dir_enum
 

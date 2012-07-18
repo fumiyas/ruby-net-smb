@@ -307,6 +307,7 @@ void Init_smb(void)
   }
 
   Init_smbdir();
+  Init_smbdirentry();
   Init_smbfile();
 }
 
