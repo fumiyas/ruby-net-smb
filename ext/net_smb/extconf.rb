@@ -14,7 +14,7 @@ $CFLAGS += " " + ENV["CFLAGS"] if ENV["CFLAGS"]
 $CPPFLAGS += " " + ENV["CPPFLAGS"] if ENV["CPPFLAGS"]
 $LDFLAGS += " " + ENV["LDFLAGS"] if ENV["LDFLAGS"]
 
-dir_config "smb"
+dir_config "net_smb"
 
 h = have_header("libsmbclient.h")
 l = have_library("smbclient", "smbc_new_context")
@@ -32,5 +32,5 @@ if try_link(<<-'EOS')
   $defs << "-DHAVE_SMBC_ALLOWDEBUGCHANGE"
 end
 
-create_makefile "smb"
+create_makefile "net_smb"
 

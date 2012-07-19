@@ -92,9 +92,9 @@ extern VALUE rb_cSMBDir;
 extern VALUE rb_cSMBDirEntry;
 extern VALUE rb_cSMBFile;
 
-void Init_smbdir(void);
-void Init_smbdirentry(void);
-void Init_smbfile(void);
+void Init_net_smbdir(void);
+void Init_net_smbdirentry(void);
+void Init_net_smbfile(void);
 
 #define _RB_SMB_H_
 

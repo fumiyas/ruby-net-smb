@@ -341,7 +341,7 @@ static VALUE rb_smbfile_read(int argc, VALUE *argv, VALUE self)
 
 /* ====================================================================== */
 
-void Init_smbfile(void)
+void Init_net_smbfile(void)
 {
   rb_cSMBFile = rb_define_class_under(rb_cSMB, "File", rb_cObject);
   rb_define_alloc_func(rb_cSMBFile, rb_smbfile_data_alloc);

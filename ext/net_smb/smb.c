@@ -259,7 +259,7 @@ static VALUE rb_smb_open(int argc, VALUE *argv, VALUE self)
 
 /* ====================================================================== */
 
-void Init_smb(void)
+void Init_net_smb(void)
 {
   VALUE rb_mNet = rb_define_module("Net");
 
@@ -306,8 +306,8 @@ void Init_smb(void)
     smbc_init_context(smbcctx);
   }
 
-  Init_smbdir();
-  Init_smbdirentry();
-  Init_smbfile();
+  Init_net_smbdir();
+  Init_net_smbdirentry();
+  Init_net_smbfile();
 }
 

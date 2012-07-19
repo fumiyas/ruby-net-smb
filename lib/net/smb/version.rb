@@ -1,5 +1,5 @@
 module Net #:nodoc:
-  module SMB #:nodoc:
-    VERSION = "0.0.2" #:nodoc:
+  class SMB #:nodoc:
+    VERSION = "0.0.3" #:nodoc:
   end
 end

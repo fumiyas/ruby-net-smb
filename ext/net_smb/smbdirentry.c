@@ -117,7 +117,7 @@ static VALUE rb_smbdirentry_link_p(VALUE self)
 
 /* ====================================================================== */
 
-void Init_smbdirentry(void)
+void Init_net_smbdirentry(void)
 {
   rb_cSMBDirEntry = rb_define_class_under(rb_cSMB, "DirEntry", rb_cHash);
   rb_define_method(rb_cSMBDirEntry, "initialize", rb_smbdirentry_initialize, 4);

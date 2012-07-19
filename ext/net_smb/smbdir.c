@@ -230,7 +230,7 @@ static VALUE rb_smbdir_each(VALUE self)
 
 /* ====================================================================== */
 
-void Init_smbdir(void)
+void Init_net_smbdir(void)
 {
   rb_cSMBDir = rb_define_class_under(rb_cSMB, "Dir", rb_cObject);
   rb_define_alloc_func(rb_cSMBDir, rb_smbdir_data_alloc);
