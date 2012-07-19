@@ -61,6 +61,60 @@ static VALUE rb_smbdirentry_comment(VALUE self)
   return rb_hash_lookup(self, sym_comment);
 }
 
+static VALUE rb_smbdirentry_workgroup_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_WORKGROUP) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_server_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_SERVER) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_file_share_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_FILE_SHARE) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_printer_share_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_PRINTER_SHARE) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_comms_share_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_COMMS_SHARE) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_ipc_share_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_IPC_SHARE) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_dir_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_DIR) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_file_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_FILE) ?
+      Qtrue : Qfalse;
+}
+
+static VALUE rb_smbdirentry_link_p(VALUE self)
+{
+  return rb_hash_lookup(self, sym_type) == INT2FIX(SMBC_LINK) ?
+      Qtrue : Qfalse;
+}
+
 /* ====================================================================== */
 
 void Init_smbdirentry(void)
@@ -72,6 +126,16 @@ void Init_smbdirentry(void)
   rb_define_method(rb_cSMBDirEntry, "type", rb_smbdirentry_type, 0);
   rb_define_method(rb_cSMBDirEntry, "url", rb_smbdirentry_url, 0);
   rb_define_method(rb_cSMBDirEntry, "comment", rb_smbdirentry_comment, 0);
+  rb_define_method(rb_cSMBDirEntry, "workgroup?", rb_smbdirentry_workgroup_p, 0);
+  rb_define_method(rb_cSMBDirEntry, "server?", rb_smbdirentry_server_p, 0);
+  rb_define_method(rb_cSMBDirEntry, "file_share?", rb_smbdirentry_file_share_p, 0);
+  rb_define_method(rb_cSMBDirEntry, "printer_share?", rb_smbdirentry_printer_share_p, 0);
+  rb_define_method(rb_cSMBDirEntry, "comms_share?", rb_smbdirentry_comms_share_p, 0);
+  rb_define_method(rb_cSMBDirEntry, "ipc_share?", rb_smbdirentry_ipc_share_p, 0);
+  rb_define_method(rb_cSMBDirEntry, "directory?", rb_smbdirentry_dir_p, 0);
+  rb_define_alias(rb_cSMBDirEntry, "dir?", "directory?");
+  rb_define_method(rb_cSMBDirEntry, "file?", rb_smbdirentry_file_p, 0);
+  rb_define_method(rb_cSMBDirEntry, "link?", rb_smbdirentry_link_p, 0);
 
   sym_name = ID2SYM(rb_intern("name"));
   sym_type = ID2SYM(rb_intern("type"));

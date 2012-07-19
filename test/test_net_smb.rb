@@ -32,7 +32,7 @@ class SMBTest < Test::Unit::TestCase
     @dirs_readable =	[@dir_readable]
     @dir_noaccess =	"dir.noaccess"
     @dirs_noaccess =	[@dir_noaccess]
-    @dirs = @dirs_readable + @dirs_writeable + @dirs_noaccess
+    @dirs = [".", ".."] + @dirs_readable + @dirs_writeable + @dirs_noaccess
     @file_noexist =	"file.noexist"
     @file_writeable =	"file.writeable"
     @file_writeable_m =	"ファイル.writeable"
@@ -206,13 +206,18 @@ class SMBTest < Test::Unit::TestCase
 
   def test_dir_read
     smb = self.smb
-    dent_names_all = [".", "..", *@dirs, *@files]
+    dent_names_all = [*@dirs, *@files]
 
     smbdir = smb.opendir(@share_private)
     dent_names = dent_names_all.clone
     while dent = smbdir.read
       assert_equal(dent.name, dent_names.delete(dent.name),
 	  "Unexpected directory entry: #{dent.name}")
+      if @dirs.include?(dent.name)
+	assert(dent.dir?)
+      elsif @files.include?(dent.name)
+	assert(dent.file?)
+      end
     end
     assert_empty(dent_names)
     smbdir.close
@@ -229,7 +234,7 @@ class SMBTest < Test::Unit::TestCase
 
   def test_dir_seek
     smb = self.smb
-    dent_names_all = [".", "..", *@dirs, *@files]
+    dent_names_all = [*@dirs, *@files]
 
     smbdir = smb.opendir(@share_private)
 
@@ -280,7 +285,7 @@ class SMBTest < Test::Unit::TestCase
 
   def test_dir_enum
     smb = self.smb
-    dent_names_all = [".", "..", *@dirs, *@files]
+    dent_names_all = [*@dirs, *@files]
 
     smbdir = smb.opendir(@share_private)
     dent_names = dent_names_all.clone
