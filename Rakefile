@@ -13,7 +13,7 @@ end
 begin
   require 'bundler/gem_tasks'
 rescue LoadError
-  load "net-smb.gemspec"
+  load File.basename(Dir.pwd).sub(%r#^(?:ruby-)?(.+?)(?:-\d.*)?$#, '\1') + '.gemspec'
 end
 
 EXT_NAME = GEMSPEC.name.gsub(/-/, '_')
