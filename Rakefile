@@ -20,7 +20,7 @@ EXT_NAME = GEMSPEC.name.gsub(/-/, '_')
 
 ## ======================================================================
 
-CLOBBER.include('pkg')
+CLEAN.include('pkg')
 CLOBBER.include('test/log')
 CLOBBER.include('test/log.*')
 
