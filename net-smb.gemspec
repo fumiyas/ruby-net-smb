@@ -18,5 +18,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_development_dependency 'rake-compiler'
+  s.required_ruby_version = ">= 1.9.2"
 end
 
