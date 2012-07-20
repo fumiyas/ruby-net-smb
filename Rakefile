@@ -32,8 +32,20 @@ CLEAN.include('ext/**/Makefile')
 CLEAN.include('lib/**/*.so')
 CLOBBER.include('pkg/*')
 CLOBBER.include('test/log')
-CLOBBER.include('test/log.[0-9]')
+CLOBBER.include('test/log.*')
 
 task :default => [:compile]
+
+task :clobber_pre do
+  ## Fix directory permissions to be able to remove by task :clobber
+  [*Dir.glob("test/log/share"), *Dir.glob("test/log.*/share")].each do |dir|
+    cmd = "find #{dir} -type d -exec chmod u+rwx {} + 2>/dev/null"
+    puts cmd
+    system cmd
+  end
+end
+
+task :clobber => [:clobber_pre]
+
 task :test => "lib/#{EXT_PATH}.so"
 
