@@ -13,24 +13,12 @@ require 'rake/extensiontask'
 require 'rake/testtask'
 
 GEMSPEC = eval(File.read(File.dirname(__FILE__) + '/net-smb.gemspec'))
+EXT_NAME = GEMSPEC.name.gsub(/-/, '_')
 
-Rake::ExtensionTask.new("net_smb", GEMSPEC)
+Rake::ExtensionTask.new(EXT_NAME, GEMSPEC)
 Rake::TestTask.new
 
-EXT_PATH = 'net_smb'
-
-file "lib/#{EXT_PATH}.so" => Dir.glob("ext/#{EXT_PATH}/*.{rb,c,h}") do
-  Dir.chdir("ext/#{EXT_PATH}") do
-    ruby 'extconf.rb'
-    sh ENV['MAKE'] || 'make'
-  end
-  cp "ext/#{EXT_PATH}/#{File.basename(EXT_PATH)}.so", "lib/#{EXT_PATH}.so"
-end
-
-CLEAN.include('ext/**/*.{log,o,so}')
-CLEAN.include('ext/**/Makefile')
-CLEAN.include('lib/**/*.so')
-CLOBBER.include('pkg/*')
+CLOBBER.include('pkg')
 CLOBBER.include('test/log')
 CLOBBER.include('test/log.*')
 
@@ -47,5 +35,5 @@ end
 
 task :clobber => [:clobber_pre]
 
-task :test => "lib/#{EXT_PATH}.so"
+task :test => "lib/#{EXT_NAME}.so"
 
