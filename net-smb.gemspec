@@ -2,7 +2,7 @@
 $:.push File.expand_path("../lib", __FILE__)
 require "net/smb/version"
 
-Gem::Specification.new do |s|
+GEMSPEC = Gem::Specification.new do |s|
   s.name        = "net-smb"
   s.version     = Net::SMB::VERSION
   s.authors     = ["SATOH Fumiyasu"]
