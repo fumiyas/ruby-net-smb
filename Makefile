@@ -1,12 +1,16 @@
 default: build
 
-build: gem
+build:
+	rake compile
+
+test:
+	rake test
 
 gem:
-	rm pkg/*.gem
 	rake build
 
 upload:
+	rm pkg/*.gem
 	$(MAKE) gem
 	gem push pkg/*.gem
 
