@@ -1,3 +1,7 @@
+require 'rake/clean'
+require 'rake/extensiontask'
+require 'rake/testtask'
+
 begin
   load 'Rakefile.local'
 rescue LoadError
@@ -7,16 +11,12 @@ end
 begin
   require 'bundler/gem_tasks'
 rescue LoadError
-  ## Ignore
+  load "net-smb.gemspec"
 end
 
-require 'rake/clean'
-require 'rake/extensiontask'
-require 'rake/testtask'
+EXT_NAME = GEMSPEC.name.gsub(/-/, '_')
 
-NAME = "net-smb"
-EXT_NAME = NAME.gsub(/-/, '_')
-load "#{NAME}.gemspec"
+## ======================================================================
 
 CLOBBER.include('pkg')
 CLOBBER.include('test/log')
@@ -24,6 +24,8 @@ CLOBBER.include('test/log.*')
 
 Rake::ExtensionTask.new(EXT_NAME, GEMSPEC)
 Rake::TestTask.new
+
+## ======================================================================
 
 task :default => [:compile]
 
