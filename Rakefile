@@ -2,6 +2,8 @@ require 'rake/clean'
 require 'rake/extensiontask'
 require 'rake/testtask'
 
+require 'find'
+
 begin
   load 'Rakefile.local'
 rescue LoadError
@@ -31,10 +33,10 @@ task :default => [:compile]
 
 task :clobber_pre do
   ## Fix directory permissions to be able to remove by task :clobber
-  [*Dir.glob("test/log/share"), *Dir.glob("test/log.*/share")].each do |dir|
-    cmd = "find #{dir} -type d -exec chmod u+rwx {} + 2>/dev/null"
-    puts cmd
-    system cmd
+  Find.find(*Dir.glob("test/log/share"), *Dir.glob("test/log.*/share")) do |path|
+    if File.directory?(path)
+      File.chmod(0755, path)
+    end
   end
 end
 
