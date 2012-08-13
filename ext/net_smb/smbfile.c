@@ -243,12 +243,15 @@ static VALUE rb_smbfile_tell(VALUE self)
   return SIZET2NUM(data->pos);
 }
 
-static VALUE rb_smbfile_seek(VALUE self, VALUE offset_num, VALUE whence_num)
+static VALUE rb_smbfile_seek(int argc, VALUE *argv, VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
   RB_SMBFILE_DATA_CLOSED(data);
-  off_t offset = NUM2OFFT(offset_num);
-  int whence = NUM2INT(whence_num);
+
+  VALUE whence_num;
+  rb_scan_args(argc, argv, "11", NULL, &whence_num);
+  off_t offset = NUM2OFFT(argv[0]);
+  int whence = NIL_P(whence_num) ? SEEK_SET : NUM2INT(whence_num);
 
   switch (whence) {
   case SEEK_SET:
@@ -276,7 +279,9 @@ static VALUE rb_smbfile_seek(VALUE self, VALUE offset_num, VALUE whence_num)
 
 static VALUE rb_smbfile_rewind(VALUE self)
 {
-  return rb_smbfile_seek(self, OFFT2NUM(0), INT2NUM(SEEK_SET));
+  VALUE argv = OFFT2NUM(0);
+
+  return rb_smbfile_seek(1, &argv, self);
 }
 
 static VALUE rb_smbfile_eof_p(VALUE self)
@@ -374,7 +379,7 @@ void Init_net_smbfile(void)
   rb_define_method(rb_cSMBFile, "closed?", rb_smbfile_closed_p, 0);
   rb_define_method(rb_cSMBFile, "tell", rb_smbfile_tell, 0);
   rb_define_alias(rb_cSMBFile, "pos", "tell");
-  rb_define_method(rb_cSMBFile, "seek", rb_smbfile_seek, 2);
+  rb_define_method(rb_cSMBFile, "seek", rb_smbfile_seek, -1);
   rb_define_method(rb_cSMBFile, "rewind", rb_smbfile_rewind, 0);
   rb_define_method(rb_cSMBFile, "eof?", rb_smbfile_eof_p, 0);
   rb_define_method(rb_cSMBFile, "read", rb_smbfile_read, -1);
