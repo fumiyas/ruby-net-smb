@@ -335,8 +335,13 @@ class SMBTest < Test::Unit::TestCase
 
       assert_equal(@file_readable, smbfile.read)
 
+      assert_equal(false, smbfile.closed?)
       smbfile.close
+      assert_equal(true, smbfile.closed?)
 
+      assert_raise(IOError) do
+	smbfile.close
+      end
       assert_raise(IOError) do
 	smbfile.read(1)
       end
@@ -345,9 +350,6 @@ class SMBTest < Test::Unit::TestCase
       end
       assert_raise(IOError) do
 	smbfile.eof?
-      end
-      assert_raise(IOError) do
-	smbfile.close
       end
     end
   end ## test_file_open_read_close
