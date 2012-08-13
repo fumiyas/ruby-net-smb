@@ -10,13 +10,18 @@ rescue LoadError
   ## Ignore
 end
 
-begin
-  require 'bundler/gem_tasks'
+GEM_SPEC = begin
+  require 'bundler/gem_helper'
+  helper = Bundler::GemHelper.new(Dir.pwd)
+  helper.install
+  helper.gemspec
 rescue LoadError
-  load File.basename(Dir.pwd).sub(%r#^(?:ruby-)?(.+?)(?:-\d.*)?$#, '\1') + '.gemspec'
+  fname = File.basename(Dir.pwd).sub(%r#^(?:ruby-)?(.+?)(?:-\d.*)?$#, '\1.gemspec')
+  contents = File.read(fname)
+  eval(contents, TOPLEVEL_BINDING, fname)
 end
 
-EXT_NAME = GEMSPEC.name.gsub(/-/, '_')
+EXT_NAME = GEM_SPEC.name.gsub(/-/, '_')
 
 ## ======================================================================
 
@@ -24,7 +29,7 @@ CLEAN.include('pkg')
 CLOBBER.include('test/log')
 CLOBBER.include('test/log.*')
 
-Rake::ExtensionTask.new(EXT_NAME, GEMSPEC)
+Rake::ExtensionTask.new(EXT_NAME, GEM_SPEC)
 Rake::TestTask.new
 
 ## ======================================================================
