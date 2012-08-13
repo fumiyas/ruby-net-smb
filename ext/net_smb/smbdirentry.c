@@ -21,10 +21,10 @@
 
 VALUE rb_cSMBDirEntry;
 
-VALUE sym_name;
-VALUE sym_type;
-VALUE sym_url;
-VALUE sym_comment;
+static VALUE sym_name;
+static VALUE sym_type;
+static VALUE sym_url;
+static VALUE sym_comment;
 
 /* ====================================================================== */
 
