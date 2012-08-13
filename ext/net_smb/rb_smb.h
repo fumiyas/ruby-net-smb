@@ -86,6 +86,11 @@ struct rb_smbfile_data {
   RB_SMBFILE_DATA *data; \
   Data_Get_Struct(obj, RB_SMBFILE_DATA, data);
 
+#define RB_SMBFILE_DATA_CLOSED(data) \
+  if (data->smbcfile == NULL) { \
+    rb_raise(rb_eIOError, "Closed Net::SMB::File stream"); \
+  }
+
 extern VALUE rb_cSMB;
 extern VALUE rb_eSMBError;
 extern VALUE rb_cSMBDir;

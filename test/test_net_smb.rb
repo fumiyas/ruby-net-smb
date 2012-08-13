@@ -338,6 +338,15 @@ class SMBTest < Test::Unit::TestCase
       smbfile.close
 
       assert_raise(IOError) do
+	smbfile.read(1)
+      end
+      assert_raise(IOError) do
+	smbfile.seek(0)
+      end
+      assert_raise(IOError) do
+	smbfile.eof?
+      end
+      assert_raise(IOError) do
 	smbfile.close
       end
     end

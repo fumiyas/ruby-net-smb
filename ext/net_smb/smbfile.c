@@ -216,6 +216,7 @@ static VALUE rb_smbfile_read_buffer_size(VALUE self)
 static VALUE rb_smbfile_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
 
   RB_SMB_DEBUG("data=%p smbcctx=%p smbcfile=%p\n", data, data->smbcctx, data->smbcfile);
 
@@ -227,6 +228,7 @@ static VALUE rb_smbfile_close(VALUE self)
 static VALUE rb_smbfile_tell(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
 
   return SIZET2NUM(data->pos);
 }
@@ -234,6 +236,7 @@ static VALUE rb_smbfile_tell(VALUE self)
 static VALUE rb_smbfile_seek(VALUE self, VALUE offset_num, VALUE whence_num)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
   off_t offset = NUM2OFFT(offset_num);
   int whence = NUM2INT(whence_num);
 
@@ -269,6 +272,7 @@ static VALUE rb_smbfile_rewind(VALUE self)
 static VALUE rb_smbfile_eof_p(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
 
   if (data->buffer_used_size - data->buffer_pos > 0) {
     /* Remained data exist in buffer */
@@ -296,6 +300,7 @@ static void rb_smbfile_readable_p_by_data(RB_SMBFILE_DATA *data)
 static VALUE rb_smbfile_read(int argc, VALUE *argv, VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
   ssize_t req_read_size;
   VALUE str = rb_str_new2("");
 
