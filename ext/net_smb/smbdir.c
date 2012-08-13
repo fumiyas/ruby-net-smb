@@ -109,8 +109,7 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
   RB_SMB_DEBUG("smbcctx=%p smbcfile=%p\n", data->smbcctx, data->smbcfile);
 
   if (rb_block_given_p()) {
-    rb_ensure(rb_yield, self, rb_smbdir_close, self);
-    return Qnil;
+    return rb_ensure(rb_yield, self, rb_smbdir_close, self);
   }
 
   return self;

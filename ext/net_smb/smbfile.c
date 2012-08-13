@@ -151,6 +151,8 @@ try:
   data->eof = (read_size == 0);
 }
 
+static VALUE rb_smbfile_close(VALUE self);
+
 static VALUE rb_smbfile_initialize(int argc, VALUE *argv, VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -184,6 +186,10 @@ static VALUE rb_smbfile_initialize(int argc, VALUE *argv, VALUE self)
   data->buffer_size = RB_SMBFILE_BUFFER_SIZE;
 
   rb_smbfile_open_by_data(data);
+
+  if (rb_block_given_p()) {
+    return rb_ensure(rb_yield, self, rb_smbfile_close, self);
+  }
 
   return self;
 }
