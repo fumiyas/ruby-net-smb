@@ -186,7 +186,11 @@ class SMBTest < Test::Unit::TestCase
     smbdir = smb.opendir(@share_public)
     assert_equal(smb.object_id, smbdir.smb.object_id)
     assert_equal(@share_public, smbdir.url)
+
+    assert_equal(false, smbdir.closed?)
     smbdir.close
+    assert_equal(true, smbdir.closed?)
+
     assert_raise(IOError) do
       smbdir.close
     end

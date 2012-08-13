@@ -140,6 +140,16 @@ static VALUE rb_smbdir_close(VALUE self)
   return self;
 }
 
+#define rb_smbdir_closed_p_by_data(data) \
+  (((data)->smbcfile == NULL) ? Qtrue : Qfalse)
+
+static VALUE rb_smbdir_closed_p(VALUE self)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  return rb_smbdir_closed_p_by_data(data);
+}
+
 static VALUE rb_smbdir_tell(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -238,6 +248,7 @@ void Init_net_smbdir(void)
   rb_define_method(rb_cSMBDir, "smb", rb_smbdir_smb, 0);
   rb_define_method(rb_cSMBDir, "url", rb_smbdir_url, 0);
   rb_define_method(rb_cSMBDir, "close", rb_smbdir_close, 0);
+  rb_define_method(rb_cSMBDir, "closed?", rb_smbdir_closed_p, 0);
   rb_define_method(rb_cSMBDir, "tell", rb_smbdir_tell, 0);
   rb_define_alias(rb_cSMBDir, "pos", "tell");
   rb_define_method(rb_cSMBDir, "seek", rb_smbdir_seek, 1);
