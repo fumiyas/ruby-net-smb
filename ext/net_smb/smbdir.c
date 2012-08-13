@@ -132,6 +132,7 @@ static VALUE rb_smbdir_url(VALUE self)
 static VALUE rb_smbdir_close(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
 
   RB_SMB_DEBUG("data=%p smbcctx=%p smbcfile=%p\n", data, data->smbcctx, data->smbcfile);
 
@@ -153,6 +154,7 @@ static VALUE rb_smbdir_closed_p(VALUE self)
 static VALUE rb_smbdir_tell(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
   smbc_telldir_fn fn;
   off_t offset;
 
@@ -172,6 +174,7 @@ static VALUE rb_smbdir_tell(VALUE self)
 static VALUE rb_smbdir_seek(VALUE self, VALUE offset_num)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
   smbc_lseekdir_fn fn;
   off_t offset = (off_t)NUM2LONG(offset_num);
 
@@ -193,6 +196,7 @@ static VALUE rb_smbdir_rewind(VALUE self)
 static VALUE rb_smbdir_read(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
+  RB_SMBFILE_DATA_CLOSED(data);
   smbc_readdir_fn fn;
   struct smbc_dirent *smbcdent;
 

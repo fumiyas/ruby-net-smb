@@ -194,6 +194,15 @@ class SMBTest < Test::Unit::TestCase
     assert_raise(IOError) do
       smbdir.close
     end
+    assert_raise(IOError) do
+      smbdir.read
+    end
+    assert_raise(IOError) do
+      smbdir.pos
+    end
+    assert_raise(IOError) do
+      smbdir.seek(0)
+    end
 
     assert_raise(Errno::ENOENT) do
       smbdir = smb.opendir(@share_public + '/' + @dir_noexist)
@@ -348,6 +357,9 @@ class SMBTest < Test::Unit::TestCase
       end
       assert_raise(IOError) do
 	smbfile.read(1)
+      end
+      assert_raise(IOError) do
+	smbfile.pos
       end
       assert_raise(IOError) do
 	smbfile.seek(0)
