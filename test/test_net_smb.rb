@@ -227,9 +227,9 @@ class SMBTest < Test::Unit::TestCase
       assert_equal(dent.name, dent_names.delete(dent.name),
 	  "Unexpected directory entry: #{dent.name}")
       if @dirs.include?(dent.name)
-	assert(dent.dir?)
+	assert_equal(true, dent.dir?)
       elsif @files.include?(dent.name)
-	assert(dent.file?)
+	assert_equal(true, dent.file?)
       end
     end
     assert_empty(dent_names)
@@ -303,7 +303,7 @@ class SMBTest < Test::Unit::TestCase
     smbdir = smb.opendir(@share_private)
     dent_names = dent_names_all.clone
     smbdir.each do |dent|
-      assert(dent_names.delete(dent.name) != nil)
+      assert_equal(dent.name, dent_names.delete(dent.name))
     end
     assert_empty(dent_names)
     smbdir.close
@@ -313,7 +313,7 @@ class SMBTest < Test::Unit::TestCase
     smbdir.read
     smbdir.read
     smbdir.each do |dent|
-      assert(dent_names.delete(dent.name) != nil)
+      assert_equal(dent.name, dent_names.delete(dent.name))
     end
     assert_empty(dent_names)
     smbdir.close
@@ -403,9 +403,9 @@ class SMBTest < Test::Unit::TestCase
 
     smbfile = smb.open(@share_public + '/' + @file_readable)
 
-    assert(smbfile.eof? != true)
+    assert_equal(false, smbfile.eof?)
     smbfile.read
-    assert(smbfile.eof? == true)
+    assert_equal(true, smbfile.eof?)
 
     assert_equal("", smbfile.read)
     assert_equal("", smbfile.read(0))
