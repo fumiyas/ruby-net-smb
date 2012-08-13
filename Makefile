@@ -1,22 +1,24 @@
-default: build
+PHONY:
 
-build:
+default: PHONY build
+
+build: PHONY
 	rake compile
 
-test:
+test: PHONY
 	rake test
 
-gem:
+gem: PHONY
 	rake build
 
-upload:
+upload: PHONY
 	rm pkg/*.gem
 	$(MAKE) gem
 	gem push pkg/*.gem
 
-clean:
+clean: PHONY
 	rake clean
 
-distclean:
+distclean: PHONY
 	rake clobber
 
