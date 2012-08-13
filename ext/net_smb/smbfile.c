@@ -235,7 +235,7 @@ static VALUE rb_smbfile_closed_p(VALUE self)
   return rb_smbfile_closed_p_by_data(data);
 }
 
-static VALUE rb_smbfile_tell(VALUE self)
+static VALUE rb_smbfile_pos(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
   RB_SMBFILE_DATA_CLOSED(data);
@@ -275,6 +275,11 @@ static VALUE rb_smbfile_seek(int argc, VALUE *argv, VALUE self)
   rb_smbfile_seek_by_data(data);
 
   return self;
+}
+
+static VALUE rb_smbfile_pos_set(VALUE self, VALUE offset)
+{
+  return rb_smbfile_seek(1, &offset, self);
 }
 
 static VALUE rb_smbfile_rewind(VALUE self)
@@ -377,11 +382,13 @@ void Init_net_smbfile(void)
   rb_define_method(rb_cSMBFile, "read_buffer_size", rb_smbfile_read_buffer_size, 0);
   rb_define_method(rb_cSMBFile, "close", rb_smbfile_close, 0);
   rb_define_method(rb_cSMBFile, "closed?", rb_smbfile_closed_p, 0);
-  rb_define_method(rb_cSMBFile, "tell", rb_smbfile_tell, 0);
-  rb_define_alias(rb_cSMBFile, "pos", "tell");
+  rb_define_method(rb_cSMBFile, "pos", rb_smbfile_pos, 0);
+  rb_define_alias(rb_cSMBFile, "tell", "pos");
   rb_define_method(rb_cSMBFile, "seek", rb_smbfile_seek, -1);
+  rb_define_method(rb_cSMBFile, "pos=", rb_smbfile_pos_set, 1);
   rb_define_method(rb_cSMBFile, "rewind", rb_smbfile_rewind, 0);
   rb_define_method(rb_cSMBFile, "eof?", rb_smbfile_eof_p, 0);
+  rb_define_alias(rb_cSMBFile, "eof", "eof?");
   rb_define_method(rb_cSMBFile, "read", rb_smbfile_read, -1);
 }
 
