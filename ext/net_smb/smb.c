@@ -224,6 +224,18 @@ static VALUE rb_smb_auth_callback(int argc, VALUE* argv, VALUE self)
   return Qnil;
 }
 
+static VALUE rb_smb_stat(VALUE self, VALUE url_obj)
+{
+  VALUE args[2];
+  VALUE smbstat;
+
+  args[0] = self;
+  args[1] = url_obj;
+  smbstat = rb_class_new_instance(2, args, rb_cSMBStat);
+
+  return smbstat;
+}
+
 static VALUE rb_smb_opendir(VALUE self, VALUE url_obj)
 {
   RB_SMB_DATA_FROM_OBJ(self, data);
@@ -273,6 +285,7 @@ void Init_net_smb(void)
   rb_define_method(rb_cSMB, "use_kerberos=", rb_smb_use_kerberos_set, 1);
   rb_define_method(rb_cSMB, "auth_callback", rb_smb_auth_callback, -1);
   rb_define_alias(rb_cSMB, "auth", "auth_callback");
+  rb_define_method(rb_cSMB, "stat", rb_smb_stat, 1);
   rb_define_method(rb_cSMB, "opendir", rb_smb_opendir, 1);
   rb_define_method(rb_cSMB, "open", rb_smb_open, -1);
 
@@ -306,6 +319,7 @@ void Init_net_smb(void)
     smbc_init_context(smbcctx);
   }
 
+  Init_net_smbstat();
   Init_net_smbdir();
   Init_net_smbdirentry();
   Init_net_smbfile();

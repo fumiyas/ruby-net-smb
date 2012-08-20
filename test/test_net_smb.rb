@@ -334,6 +334,45 @@ class SMBTest < Test::Unit::TestCase
     smbdir.close
   end ## test_dir_enum
 
+  def file_time2libsmb_time(file_time)
+    ## Discard fractional seconds
+    smb_time = Time.at(file_time.to_i)
+    ## Round up if fractional seconds is greater than 0.5
+    smb_time += 1 if (file_time - smb_time >= 0.5)
+    return smb_time
+  end
+
+  def test_stat
+    smb = self.smb
+
+    smb.opendir(@@share_public) do |smbdir|
+      while dent = smbdir.read
+	next if (dent.name =~ /^\.\.?$/)
+
+	file_stat = File.stat(@@share_dir + '/' + dent.name)
+
+	smb_stat = smb.stat(dent.url)
+	#assert_equal(file_stat.dev, smb_stat.dev, "Net::SMB::Stat#dev #{dent.name}")
+	#assert_equal(file_stat.ino, smb_stat.ino, "Net::SMB::Stat#ino #{dent.name}")
+	#assert_equal(file_stat.nlink, smb_stat.nlink, "Net::SMB::Stat#nlink #{dent.name}")
+	#assert_equal(file_stat.mode, smb_stat.mode, "Net::SMB::Stat#mode #{dent.name}")
+	assert_equal(file_stat.uid, smb_stat.uid, "Net::SMB::Stat#uid #{dent.name}")
+	assert_equal(file_stat.gid, smb_stat.gid, "Net::SMB::Stat#gid #{dent.name}")
+	if (dent.dir?)
+	  assert_equal(0, smb_stat.size, "Net::SMB::Stat#size #{dent.name}")
+	else
+	  assert_equal(file_stat.size, smb_stat.size, "Net::SMB::Stat#size #{dent.name}")
+	end
+	assert_equal(file_time2libsmb_time(file_stat.atime), smb_stat.atime,
+			"Net::SMB::Stat#atime #{dent.name}")
+	assert_equal(file_time2libsmb_time(file_stat.mtime), smb_stat.mtime,
+			"Net::SMB::Stat#mtime #{dent.name}")
+	assert_equal(file_time2libsmb_time(file_stat.ctime), smb_stat.ctime,
+			"Net::SMB::Stat#ctime #{dent.name}")
+      end
+    end
+  end
+
   def test_file_open_read_close
     smb = self.smb
 

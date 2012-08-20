@@ -51,6 +51,7 @@
 #define RB_SMBFILE_BUFFER_SIZE 8192
 
 typedef struct rb_smb_data		RB_SMB_DATA;
+typedef struct rb_smbstat_data		RB_SMBSTAT_DATA;
 typedef struct rb_smbfile_data		RB_SMBFILE_DATA;
 
 struct rb_smb_data {
@@ -58,6 +59,10 @@ struct rb_smb_data {
   SMBCCTX	*smbcctx;
   VALUE		auth_callback;
   RB_SMBFILE_DATA *smbfile_data_list;
+};
+
+struct rb_smbstat_data {
+  struct stat	stat;
 };
 
 struct rb_smbfile_data {
@@ -82,6 +87,10 @@ struct rb_smbfile_data {
   RB_SMB_DATA *data; \
   Data_Get_Struct(obj, RB_SMB_DATA, data);
 
+#define RB_SMBSTAT_DATA_FROM_OBJ(obj, data) \
+  RB_SMBSTAT_DATA *data; \
+  Data_Get_Struct(obj, RB_SMBSTAT_DATA, data);
+
 #define RB_SMBFILE_DATA_FROM_OBJ(obj, data) \
   RB_SMBFILE_DATA *data; \
   Data_Get_Struct(obj, RB_SMBFILE_DATA, data);
@@ -93,10 +102,12 @@ struct rb_smbfile_data {
 
 extern VALUE rb_cSMB;
 extern VALUE rb_eSMBError;
+extern VALUE rb_cSMBStat;
 extern VALUE rb_cSMBDir;
 extern VALUE rb_cSMBDirEntry;
 extern VALUE rb_cSMBFile;
 
+void Init_net_smbstat(void);
 void Init_net_smbdir(void);
 void Init_net_smbdirentry(void);
 void Init_net_smbfile(void);
