@@ -35,7 +35,7 @@ static VALUE rb_smbdirentry_initialize(VALUE self,
 
   rb_hash_aset(self, sym_name, name_obj);
   rb_hash_aset(self, sym_type, type_obj);
-  rb_hash_aset(self, sym_url, comment_obj);
+  rb_hash_aset(self, sym_url, url_obj);
   rb_hash_aset(self, sym_comment, comment_obj);
 
   return self;
