@@ -1,11 +1,9 @@
-PHONY:
-
 default: PHONY build
 
 build: PHONY
 	rake compile
 
-test: PHONY
+test t: PHONY
 	rake test
 
 gem: PHONY
@@ -22,3 +20,4 @@ clean: PHONY
 distclean: PHONY
 	rake clobber
 
+PHONY:
