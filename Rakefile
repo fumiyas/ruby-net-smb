@@ -1,7 +1,3 @@
-require 'rake/clean'
-require 'rake/extensiontask'
-require 'rake/testtask'
-
 require 'find'
 
 begin
@@ -25,11 +21,24 @@ EXT_NAME = GEM_SPEC.name.gsub(/-/, '_')
 
 ## ======================================================================
 
+require 'rake/clean'
+
 CLEAN.include('pkg')
 CLOBBER.include('test/log')
 CLOBBER.include('test/log.*')
 
-Rake::ExtensionTask.new(EXT_NAME, GEM_SPEC)
+## ======================================================================
+
+require 'rake/extensiontask'
+
+Rake::ExtensionTask.new(EXT_NAME, GEM_SPEC) do |task|
+  task.source_pattern = '*.{c,h}'
+end
+
+## ======================================================================
+
+require 'rake/testtask'
+
 Rake::TestTask.new
 
 ## ======================================================================
