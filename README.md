@@ -11,7 +11,7 @@ Requirement
 ----------------------------------------------------------------------
 
 * Ruby 1.9.3+
-* Samba 3.5+ (libsmbclient)
+* Samba 3.6+ (libsmbclient)
 * C compiler
 
 Development Resources
@@ -23,7 +23,7 @@ Development Resources
 Copyright
 ----------------------------------------------------------------------
 
-Copyright (C) 2012 SATOH Fumiyas @ OSS Technology Corp., Japan
+Copyright (C) 2013 SATOH Fumiyas @ OSS Technology Corp., Japan
 
 Licensed under the GNU General Public License version 3
 

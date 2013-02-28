@@ -1,0 +1,5 @@
+Ruby Net::SMB 0.0.4 (2013-02-28)
+
+  * Add Net::SMB::Stat
+  * Add Net::SMB#stat, Net::SMB::Dir#stat, Net::SMB::File#stat
+
