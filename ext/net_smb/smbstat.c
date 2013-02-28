@@ -83,11 +83,22 @@ static VALUE rb_smbstat_initialize(int argc, VALUE *argv, VALUE self)
   }
   else if (rb_obj_is_kind_of(smb_or_file_obj, rb_cSMBDir)) {
     RB_SMBFILE_DATA_FROM_OBJ(smb_or_file_obj, smbfile_data);
+#if 0
+    /*
+     * SMBC_fstatdir_ctx() does nothing. See source/libsmb/libsmb_dir.c in
+     * Samba source tree.
+     */
     smbc_fstatdir_fn fn = smbc_getFunctionFstatdir(smbfile_data->smbcctx);
 
     if ((*fn)(smbfile_data->smbcctx, smbfile_data->smbcfile, &data->stat)) {
       rb_sys_fail("SMBC_fstatdir_ctx() failed");
     }
+#else
+    smbc_stat_fn fn = smbc_getFunctionStat(smbfile_data->smbcctx);
+    if ((*fn)(smbfile_data->smbcctx, smbfile_data->url, &data->stat)) {
+      rb_sys_fail("SMBC_stat_ctx() failed");
+    }
+#endif
   }
   else {
     rb_raise(rb_eTypeError, "Net::SMB, Net::SMB::Dir or Net::SMB::File was expected");
