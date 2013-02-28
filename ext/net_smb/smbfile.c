@@ -235,6 +235,11 @@ static VALUE rb_smbfile_closed_p(VALUE self)
   return rb_smbfile_closed_p_by_data(data);
 }
 
+static VALUE rb_smbfile_stat(VALUE self)
+{
+  return rb_class_new_instance(1, &self, rb_cSMBStat);
+}
+
 static VALUE rb_smbfile_pos(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -382,6 +387,7 @@ void Init_net_smbfile(void)
   rb_define_method(rb_cSMBFile, "read_buffer_size", rb_smbfile_read_buffer_size, 0);
   rb_define_method(rb_cSMBFile, "close", rb_smbfile_close, 0);
   rb_define_method(rb_cSMBFile, "closed?", rb_smbfile_closed_p, 0);
+  rb_define_method(rb_cSMBFile, "stat", rb_smbfile_stat, 0);
   rb_define_method(rb_cSMBFile, "pos", rb_smbfile_pos, 0);
   rb_define_alias(rb_cSMBFile, "tell", "pos");
   rb_define_method(rb_cSMBFile, "seek", rb_smbfile_seek, -1);
