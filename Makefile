@@ -10,7 +10,7 @@ gem: PHONY
 	rake build
 
 upload: PHONY
-	rm pkg/*.gem
+	rm -f pkg/*.gem
 	$(MAKE) gem
 	gem push pkg/*.gem
 
