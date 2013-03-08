@@ -23,7 +23,7 @@ Development Resources
 Copyright
 ----------------------------------------------------------------------
 
-Copyright (C) 2013 SATOH Fumiyas @ OSS Technology Corp., Japan
+Copyright (C) 2012-2013 SATOH Fumiyas @ OSS Technology Corp., Japan
 
 Licensed under the GNU General Public License version 3
 

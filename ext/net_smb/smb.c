@@ -1,7 +1,7 @@
 /*
  * Ruby/Net::SMB - SMB/CIFS client (Samba libsmbclient binding) for Ruby
  * Net::SMB class
- * Copyright (C) 2012 SATOH Fumiyas @ OSS Technology Corp., Japan
+ * Copyright (C) 2012-2013 SATOH Fumiyas @ OSS Technology Corp., Japan
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
