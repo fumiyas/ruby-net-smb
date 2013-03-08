@@ -23,6 +23,8 @@
 VALUE rb_cSMB;
 VALUE rb_eSMBError;
 
+static ID id_call;
+
 /* ====================================================================== */
 
 static void smbcctx_auth_fn(SMBCCTX *smbcctx,
@@ -43,7 +45,7 @@ static void smbcctx_auth_fn(SMBCCTX *smbcctx,
   }
 
   cred_obj = rb_funcall(data->auth_callback,
-    rb_intern("call"), 2,
+    id_call, 2,
     rb_str_new2(server),
     rb_str_new2(share));
 
@@ -307,6 +309,8 @@ void Init_net_smb(void)
 
   /* Net::SMB::Error */
   rb_eSMBError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
+
+  id_call = rb_intern("call");
 
   const char *smbc_ver = smbc_version();
   int smbc_ver_major = atoi(smbc_ver);
