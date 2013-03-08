@@ -5,4 +5,8 @@
 *.so
 Gemfile.lock
 Makefile
+Rakefile.local
+tags
 pkg/*
+test/log
+test/log.*
