@@ -415,6 +415,24 @@ class SMBTest < Test::Unit::TestCase
     end
   end
 
+  def test_smb_xattr
+    smb = self.smb
+
+    owner = "LOCALHOST\\#{@@username}"
+
+    smb.opendir(@@share_public) do |smbdir|
+      while dent = smbdir.read
+	next if (dent.name =~ /^\.\.?$/)
+	next if (dent.name =~ /\.noaccess$/)
+
+        assert_equal(owner, smb.xattr(dent.url, 'system.nt_sec_desc.owner+'))
+        assert_raise(Errno::EINVAL) do
+          assert_equal(owner, smb.xattr(dent.url, 'invalid-xattr-name'))
+        end
+      end
+    end
+  end
+
   def test_file_open_read_close
     smb = self.smb
 

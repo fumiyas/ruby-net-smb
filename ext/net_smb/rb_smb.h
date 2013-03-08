@@ -112,6 +112,8 @@ void Init_net_smbdir(void);
 void Init_net_smbdirentry(void);
 void Init_net_smbfile(void);
 
+VALUE rb_smb_xattr_get(VALUE self, VALUE url_obj, VALUE name_obj);
+
 #define _RB_SMB_H_
 
 #endif /* _RB_SMB_H_ */

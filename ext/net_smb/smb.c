@@ -268,6 +268,21 @@ static VALUE rb_smb_open(int argc, VALUE *argv, VALUE self)
   return smbfile;
 }
 
+VALUE rb_smb_xattr_get(VALUE self, VALUE url_obj, VALUE name_obj)
+{
+  RB_SMB_DATA_FROM_OBJ(self, data);
+  const char *url = RSTRING_PTR(url_obj);
+  const char *name = RSTRING_PTR(name_obj);
+  char value[1024];
+
+  smbc_getxattr_fn fn = smbc_getFunctionGetxattr(data->smbcctx);
+
+  if ((*fn)(data->smbcctx, url, name, value, sizeof(value)) < 0) {
+    rb_sys_fail("SMBC_getxattr_ctx() failed");
+  }
+
+  return rb_str_new2(value);
+}
 
 /* ====================================================================== */
 
@@ -288,6 +303,7 @@ void Init_net_smb(void)
   rb_define_method(rb_cSMB, "stat", rb_smb_stat, 1);
   rb_define_method(rb_cSMB, "opendir", rb_smb_opendir, 1);
   rb_define_method(rb_cSMB, "open", rb_smb_open, -1);
+  rb_define_method(rb_cSMB, "xattr", rb_smb_xattr_get, 2);
 
   /* Net::SMB::Error */
   rb_eSMBError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);

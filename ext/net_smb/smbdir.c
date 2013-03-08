@@ -156,6 +156,13 @@ static VALUE rb_smbdir_stat(VALUE self)
   return rb_class_new_instance(1, &self, rb_cSMBStat);
 }
 
+static VALUE rb_smbdir_xattr_get(VALUE self, VALUE name_obj)
+{
+  RB_SMBFILE_DATA_FROM_OBJ(self, data);
+
+  return rb_smb_xattr_get(data->smb_obj, rb_str_new2(data->url), name_obj);
+}
+
 static VALUE rb_smbdir_tell(VALUE self)
 {
   RB_SMBFILE_DATA_FROM_OBJ(self, data);
@@ -259,6 +266,7 @@ void Init_net_smbdir(void)
   rb_define_method(rb_cSMBDir, "close", rb_smbdir_close, 0);
   rb_define_method(rb_cSMBDir, "closed?", rb_smbdir_closed_p, 0);
   rb_define_method(rb_cSMBDir, "stat", rb_smbdir_stat, 0);
+  rb_define_method(rb_cSMBDir, "xattr", rb_smbdir_xattr_get, 1);
   rb_define_method(rb_cSMBDir, "tell", rb_smbdir_tell, 0);
   rb_define_alias(rb_cSMBDir, "pos", "tell");
   rb_define_method(rb_cSMBDir, "seek", rb_smbdir_seek, 1);
