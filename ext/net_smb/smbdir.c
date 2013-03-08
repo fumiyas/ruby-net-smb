@@ -41,7 +41,7 @@ static void rb_smbdir_close_by_data(RB_SMBFILE_DATA *data)
   smbc_closedir_fn fn = smbc_getFunctionClosedir(data->smbcctx);
 
   if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
-    rb_sys_fail("SMBC_closedir_ctx() failed");
+    rb_sys_fail(data->url);
   }
 }
 
@@ -94,7 +94,7 @@ static VALUE rb_smbdir_initialize(VALUE self, VALUE smb_obj, VALUE url_obj)
   fn = smbc_getFunctionOpendir(smb_data->smbcctx);
   data->smbcfile = (*fn)(smb_data->smbcctx, url);
   if (data->smbcfile == NULL) {
-    rb_sys_fail("SMBC_opendir_ctx() failed");
+    rb_sys_fail_str(url_obj);
   }
 
   /* FIXME: Take encoding from argument */
@@ -176,7 +176,7 @@ static VALUE rb_smbdir_tell(VALUE self)
   offset = (*fn)(data->smbcctx, data->smbcfile);
   if (offset == (off_t)-1) {
     if (errno != 0) {
-      rb_sys_fail("SMBC_telldir_ctx() failed");
+      rb_sys_fail(data->url);
     }
   }
 
@@ -194,7 +194,7 @@ static VALUE rb_smbdir_seek(VALUE self, VALUE offset_num)
 
   errno = 0;
   if ((*fn)(data->smbcctx, data->smbcfile, offset) == -1) {
-    rb_sys_fail("SMBC_lseekdir_ctx() failed");
+    rb_sys_fail(data->url);
   }
 
   return self;
@@ -219,7 +219,7 @@ static VALUE rb_smbdir_read(VALUE self)
 
   if (smbcdent == NULL) {
     if (errno) {
-      rb_sys_fail("SMBC_readdir_ctx() failed");
+      rb_sys_fail(data->url);
     }
 
     return Qnil;

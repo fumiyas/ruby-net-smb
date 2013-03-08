@@ -42,7 +42,7 @@ static void rb_smbfile_close_by_data(RB_SMBFILE_DATA *data)
   smbc_close_fn fn = smbc_getFunctionClose(data->smbcctx);
 
   if ((*fn)(data->smbcctx, data->smbcfile) != 0) {
-    rb_sys_fail("SMBC_close_ctx() failed");
+    rb_sys_fail(data->url);
   }
 }
 
@@ -86,7 +86,7 @@ static void rb_smbfile_open_by_data(RB_SMBFILE_DATA *data)
 
   data->smbcfile = (*fn)(data->smbcctx, data->url, data->oflags, 0);
   if (data->smbcfile == NULL) {
-    rb_sys_fail("SMBC_open_ctx() failed");
+    rb_sys_fail(data->url);
   }
 
   RB_SMB_DEBUG("smbcctx=%p smbcfile=%p\n", data->smbcctx, data->smbcfile);
@@ -97,7 +97,7 @@ static void rb_smbfile_seek_by_data(RB_SMBFILE_DATA *data)
   smbc_lseek_fn fn = smbc_getFunctionLseek(data->smbcctx);
 
   if ((*fn)(data->smbcctx, data->smbcfile, data->pos, SEEK_SET) == -1) {
-    rb_sys_fail("SMBC_lseek_ctx() failed");
+    rb_sys_fail(data->url);
   }
 
   data->buffer_used_size = 0;
@@ -272,7 +272,7 @@ static VALUE rb_smbfile_seek(int argc, VALUE *argv, VALUE self)
   case SEEK_CUR:
     if (offset < 0 && offset < -data->pos) {
       errno = EINVAL;
-      rb_sys_fail("SMBC_lseek_ctx() failed");
+      rb_sys_fail(data->url);
     }
     data->pos += offset;
     break;

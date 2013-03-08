@@ -70,7 +70,7 @@ static VALUE rb_smbstat_initialize(int argc, VALUE *argv, VALUE self)
     const char *url = StringValueCStr(url_obj);
     smbc_stat_fn fn = smbc_getFunctionStat(smb_data->smbcctx);
     if ((*fn)(smb_data->smbcctx, url, &data->stat)) {
-      rb_sys_fail("SMBC_stat_ctx() failed");
+      rb_sys_fail_str(url_obj);
     }
   }
   else if (rb_obj_is_kind_of(smb_or_file_obj, rb_cSMBFile)) {
@@ -78,7 +78,7 @@ static VALUE rb_smbstat_initialize(int argc, VALUE *argv, VALUE self)
     smbc_fstat_fn fn = smbc_getFunctionFstat(smbfile_data->smbcctx);
 
     if ((*fn)(smbfile_data->smbcctx, smbfile_data->smbcfile, &data->stat)) {
-      rb_sys_fail("SMBC_fstat_ctx() failed");
+      rb_sys_fail(smbfile_data->url);
     }
   }
   else if (rb_obj_is_kind_of(smb_or_file_obj, rb_cSMBDir)) {
@@ -91,12 +91,12 @@ static VALUE rb_smbstat_initialize(int argc, VALUE *argv, VALUE self)
     smbc_fstatdir_fn fn = smbc_getFunctionFstatdir(smbfile_data->smbcctx);
 
     if ((*fn)(smbfile_data->smbcctx, smbfile_data->smbcfile, &data->stat)) {
-      rb_sys_fail("SMBC_fstatdir_ctx() failed");
+      rb_sys_fail(smbfile_data->url);
     }
 #else
     smbc_stat_fn fn = smbc_getFunctionStat(smbfile_data->smbcctx);
     if ((*fn)(smbfile_data->smbcctx, smbfile_data->url, &data->stat)) {
-      rb_sys_fail("SMBC_stat_ctx() failed");
+      rb_sys_fail(smbfile_data->url);
     }
 #endif
   }

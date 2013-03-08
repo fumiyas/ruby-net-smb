@@ -280,7 +280,7 @@ VALUE rb_smb_xattr_get(VALUE self, VALUE url_obj, VALUE name_obj)
   smbc_getxattr_fn fn = smbc_getFunctionGetxattr(data->smbcctx);
 
   if ((*fn)(data->smbcctx, url, name, value, sizeof(value)) < 0) {
-    rb_sys_fail("SMBC_getxattr_ctx() failed");
+    rb_sys_fail_str(url_obj);
   }
 
   return rb_str_new2(value);
