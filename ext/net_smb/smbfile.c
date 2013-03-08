@@ -277,10 +277,12 @@ static VALUE rb_smbfile_seek(int argc, VALUE *argv, VALUE self)
     data->pos += offset;
     break;
   case SEEK_END:
-    rb_sys_fail("FIXME");
+    /* FIXME */
+    rb_raise(rb_eNotImpError, "SEEK_END");
     break;
   default:
-    rb_sys_fail("FIXME");
+    errno = EINVAL;
+    rb_sys_fail(data->url);
     break;
   }
 
