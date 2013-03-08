@@ -1,4 +1,4 @@
-Ruby Net::SMB 0.0.5 (not yet released)
+Ruby Net::SMB 0.0.5 (2013-03-09)
   * Add Net::SMB#xattr, Net::SMB::Dir#xattr, Net::SMB::File#xattr
 
 Ruby Net::SMB 0.0.4 (2013-02-28)
