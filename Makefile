@@ -1,23 +1,27 @@
+RAKE=		rake
+GEM=		gem
+
 default: PHONY build
 
 build: PHONY
-	rake compile
+	$(RAKE) compile
 
 test t: PHONY
-	rake test
+	$(RAKE) test
 
 gem: PHONY
-	rake build
+	$(RAKE) build
 
 upload: PHONY
-	rm -f pkg/*.gem
+	$(RM) pkg/*.gem
 	$(MAKE) gem
-	gem push pkg/*.gem
+	$(GEM) push pkg/*.gem
 
 clean: PHONY
-	rake clean
+	$(RAKE) clean
 
 distclean: PHONY
-	rake clobber
+	$(RAKE) clobber
 
 PHONY:
+
