@@ -21,19 +21,9 @@ EXT_NAME = GEM_SPEC.name.gsub(/-/, '_')
 
 ## ======================================================================
 
-require 'rake/clean'
-
-CLEAN.include('pkg')
-CLOBBER.include('test/log')
-CLOBBER.include('test/log.*')
-
-## ======================================================================
-
 require 'rake/extensiontask'
 
-Rake::ExtensionTask.new(EXT_NAME, GEM_SPEC) do |task|
-  task.source_pattern = '*.{c,h}'
-end
+Rake::ExtensionTask.new(EXT_NAME, GEM_SPEC)
 
 ## ======================================================================
 
@@ -43,7 +33,16 @@ Rake::TestTask.new
 
 ## ======================================================================
 
+require 'rake/clean'
+
+CLEAN.include('pkg')
+CLOBBER.include('test/log')
+CLOBBER.include('test/log.*')
+
+## ======================================================================
+
 task :default => [:compile]
+task :test => [:compile]
 
 task :clobber_pre do
   ## Fix directory permissions to be able to remove by task :clobber
@@ -55,6 +54,4 @@ task :clobber_pre do
 end
 
 task :clobber => [:clobber_pre]
-
-task :test => "lib/#{EXT_NAME}.so"
 
