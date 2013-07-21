@@ -17,7 +17,9 @@ Gem::Specification.new do |s|
   s.extensions    = `git ls-files -- ext/*.rb`.split("\n")
   s.require_paths = ["lib"]
 
+  s.add_development_dependency 'rake'
   s.add_development_dependency 'rake-compiler'
+  s.add_development_dependency 'bundler'
   s.required_ruby_version = ">= 1.9.2"
 end
 

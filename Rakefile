@@ -1,22 +1,14 @@
-require 'find'
-
 begin
   load 'Rakefile.local'
 rescue LoadError
   ## Ignore
 end
 
-GEM_SPEC = begin
-  require 'bundler/gem_helper'
-  helper = Bundler::GemHelper.new(Dir.pwd)
-  helper.install
-  helper.gemspec
-rescue LoadError
-  fname = File.basename(Dir.pwd).sub(%r#^(?:ruby-)?(.+?)(?:-\d.*)?$#, '\1.gemspec')
-  contents = File.read(fname)
-  eval(contents, TOPLEVEL_BINDING, fname)
-end
+## ======================================================================
 
+require 'bundler/gem_helper'
+
+GEM_SPEC = Bundler::GemHelper.new(Dir.pwd).install.gemspec
 EXT_NAME = GEM_SPEC.name.gsub(/-/, '_')
 
 ## ======================================================================
@@ -40,6 +32,8 @@ CLOBBER.include('test/log')
 CLOBBER.include('test/log.*')
 
 ## ======================================================================
+
+require 'find'
 
 task :default => [:compile]
 task :test => [:compile]
