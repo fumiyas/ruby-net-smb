@@ -288,7 +288,7 @@ VALUE rb_smb_xattr_get(VALUE self, VALUE url_obj, VALUE name_obj)
 
 /* ====================================================================== */
 
-void Init_net_smb(void)
+void Init_smb(void)
 {
   VALUE rb_mNet = rb_define_module("Net");
 

@@ -1,3 +1,3 @@
 require "net/smb/version"
-require "net_smb"
+require "net/smb/smb"
 

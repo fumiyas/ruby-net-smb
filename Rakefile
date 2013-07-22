@@ -6,16 +6,19 @@ end
 
 ## ======================================================================
 
-require 'bundler/gem_helper'
+require 'bundler'
+require 'bundler/gem_tasks'
 
-GEM_SPEC = Bundler::GemHelper.new(Dir.pwd).install.gemspec
-EXT_NAME = GEM_SPEC.name.gsub(/-/, '_')
+Bundler.setup
 
 ## ======================================================================
 
 require 'rake/extensiontask'
 
-Rake::ExtensionTask.new(EXT_NAME, GEM_SPEC)
+Rake::ExtensionTask.new('smb') do |ext|
+  ext.ext_dir = 'ext/net/smb'
+  ext.lib_dir = 'lib/net/smb'
+end
 
 ## ======================================================================
 
