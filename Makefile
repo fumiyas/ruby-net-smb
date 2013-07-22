@@ -17,6 +17,9 @@ upload: PHONY
 	$(MAKE) gem
 	$(GEM) push pkg/*.gem
 
+install: PHONY
+	$(RAKE) install
+
 clean: PHONY
 	$(RAKE) clean
 
