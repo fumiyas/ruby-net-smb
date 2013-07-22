@@ -10,15 +10,22 @@ for Ruby.
 Requirement
 ----------------------------------------------------------------------
 
-* Ruby 1.9.3+
-* Samba 3.6+ (libsmbclient)
-* C compiler
+For runtime environment:
+
+  * Ruby 1.9.3+
+  * Samba 3.6+ (libsmbclient)
+
+For build and development environment:
+
+  * C compiler
+  * Ruby bundler
+  * Ruby rake-compiler
 
 Development Resources
 ----------------------------------------------------------------------
 
-* Source: https://github.com/fumiyas/ruby-net-smb
-* Issues: https://github.com/fumiyas/ruby-net-smb/issues
+  * Source: https://github.com/fumiyas/ruby-net-smb
+  * Issues: https://github.com/fumiyas/ruby-net-smb/issues
 
 Copyright
 ----------------------------------------------------------------------
