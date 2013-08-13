@@ -22,15 +22,5 @@ unless h && l
   exit 1
 end
 
-have_func("smbc_set_credentials")
-
-## Samba 3.2.0+ hide AllowDebugChange variable.
-if try_link(<<-'EOS')
-    extern int AllowDebugChange;
-    int main(int argc, char **argv) { AllowDebugChange = 0; }
-  EOS
-  $defs << "-DHAVE_SMBC_ALLOWDEBUGCHANGE"
-end
-
 create_makefile 'net/smb/smb'
 
