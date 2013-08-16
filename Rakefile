@@ -28,6 +28,7 @@ Rake::TestTask.new
 require 'rake/clean'
 
 CLEAN.include('pkg')
+CLOBBER.include('test/etc/smb.conf')
 CLOBBER.include('test/log')
 CLOBBER.include('test/log.*')
 
@@ -36,7 +37,20 @@ CLOBBER.include('test/log.*')
 require 'find'
 
 task :default => [:compile]
+
 task :test => [:compile]
+task :test => 'test/etc/smb.conf'
+
+file 'test/etc/smb.conf' => 'test/etc/smb.conf.tmpl' do |t|
+  test_dir = File.dirname(__FILE__) + '/test'
+  tmpl = File.open(t.name + '.tmpl')
+  File.open(t.name, 'w') do |out|
+    tmpl.each_line do |line|
+      out.print line.gsub('@@test_dir@@', test_dir)
+    end
+  end
+  tmpl.close
+end
 
 task :clobber_pre do
   ## Fix directory permissions to be able to remove by task :clobber

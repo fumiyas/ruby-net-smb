@@ -20,6 +20,11 @@ class SMBTest < Test::Unit::TestCase
   @@samba_log_dir = ENV['TEST_SAMBA_LOG_DIR'] ||= @@test_dir + "/log"
   @@samba_var_dir = ENV['TEST_SAMBA_VAR_DIR'] ||= @@samba_log_dir + "/var"
   @@share_dir = ENV['TEST_SHARE_DIR'] ||= @@samba_log_dir + "/share"
+  @@samba_options = [
+    "--configfile=#{@@smb_conf}",
+    "--debuglevel=#{@@samba_debug_level}",
+    "--log-basename=#{@@samba_var_dir}",
+  ]
 
   @@share_private =	"smb://localhost/private"
   @@share_public =	"smb://localhost/public"
@@ -63,6 +68,7 @@ class SMBTest < Test::Unit::TestCase
   end
 
   Dir.mkdir(@@samba_log_dir, 0750)
+  Dir.mkdir(@@samba_log_dir + '/private', 0750)
   Dir.mkdir(@@samba_var_dir, 0750)
   Dir.mkdir(@@share_dir, 0750)
   @@dirs_readable.each do |dname|
@@ -99,7 +105,7 @@ class SMBTest < Test::Unit::TestCase
 
   pdbedit_r, pdbedit_w = IO.pipe
   pdbedit_pid = Kernel.spawn(
-    @@pdbedit, "--configfile", @@smb_conf, "--create", "--password-from-stdin", @@username,
+    @@pdbedit, *@@samba_options, "--create", "--password-from-stdin", @@username,
     :in => pdbedit_r,
     [:out, :err] => [@@samba_log_dir + '/pdbedit.log', 'w'],
   )
@@ -117,7 +123,7 @@ class SMBTest < Test::Unit::TestCase
   def smbstatus
     smbstatus_r, smbstatus_w = IO.pipe
     smbstatus_pid = Kernel.spawn(
-      @@smbstatus, "--configfile", @@smb_conf, "--shares",
+      @@smbstatus, *@@samba_options, "--shares",
       :out => smbstatus_w,
       :err => [@@samba_log_dir + '/smbstatus.log', 'w+'],
     )

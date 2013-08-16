@@ -1,17 +1,17 @@
 [global]
-private dir = %$(TEST_SAMBA_VAR_DIR)
-lock directory = %$(TEST_SAMBA_VAR_DIR)
-state directory = %$(TEST_SAMBA_VAR_DIR)
-cache directory = %$(TEST_SAMBA_VAR_DIR)
-pid directory = %$(TEST_SAMBA_VAR_DIR)
-ncalrpc dir = %$(TEST_SAMBA_VAR_DIR)
+private dir = @@test_dir@@/log/private
+lock directory = @@test_dir@@/log/lock
+state directory = @@test_dir@@/log/state
+cache directory = @@test_dir@@/log/cache
+pid directory = @@test_dir@@/log/pid
+ncalrpc dir = @@test_dir@@/log/ncalrpc
 
 netbios name = localhost
 map to guest = BAD USER
 stat cache = no
 
 [template]
-path = %$(TEST_SHARE_DIR)
+path = @@test_dir@@/log/share
 writeable = yes
 guest ok = no
 
