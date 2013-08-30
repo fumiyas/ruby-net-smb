@@ -504,6 +504,10 @@ class SMBTest < Test::Unit::TestCase
     smbfile.close
   end ## test_file_read_sequential
 
+  def test_file_read_random
+    ## FIXME
+  end ## test_file_read_random
+
   def test_file_read_eof
     smb = self.smb
 
@@ -519,6 +523,18 @@ class SMBTest < Test::Unit::TestCase
 
     smbfile.close
   end ## test_file_read_eof
+
+  def test_file_open_write_close
+    ## FIXME
+  end ## test_file_open_write_close
+
+  def test_file_write_sequential
+    ## FIXME
+  end ## test_file_write_sequential
+
+  def test_file_write_random
+    ## FIXME
+  end ## test_file_write_random
 end
 
 end

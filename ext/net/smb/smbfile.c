@@ -84,7 +84,7 @@ static void rb_smbfile_open_by_data(RB_SMBFILE_DATA *data)
 {
   smbc_open_fn fn = smbc_getFunctionOpen(data->smbcctx);
 
-  data->smbcfile = (*fn)(data->smbcctx, data->url, data->oflags, 0);
+  data->smbcfile = (*fn)(data->smbcctx, data->url, data->oflags, data->fmode);
   if (data->smbcfile == NULL) {
     rb_sys_fail(data->url);
   }
