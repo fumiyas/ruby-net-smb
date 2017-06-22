@@ -286,6 +286,22 @@ VALUE rb_smb_xattr_get(VALUE self, VALUE url_obj, VALUE name_obj)
   return rb_str_new2(value);
 }
 
+VALUE rb_smb_xattr_set(VALUE self, VALUE url_obj, VALUE name_obj, VALUE value_obj)
+{
+  RB_SMB_DATA_FROM_OBJ(self, data);
+  const char *url = RSTRING_PTR(url_obj);
+  const char *name = RSTRING_PTR(name_obj);
+  char *value = RSTRING_PTR(value_obj);
+
+  smbc_setxattr_fn fn = smbc_getFunctionSetxattr(data->smbcctx);
+
+  if ((*fn)(data->smbcctx, url, name, value, sizeof(value), 0) < 0) {
+    rb_sys_fail_str(url_obj);
+  }
+
+  return rb_str_new2(value);
+}
+
 /* ====================================================================== */
 
 void Init_smb(void)
@@ -306,6 +322,7 @@ void Init_smb(void)
   rb_define_method(rb_cSMB, "opendir", rb_smb_opendir, 1);
   rb_define_method(rb_cSMB, "open", rb_smb_open, -1);
   rb_define_method(rb_cSMB, "xattr", rb_smb_xattr_get, 2);
+  rb_define_method(rb_cSMB, "setxattr", rb_smb_xattr_set, 3);
 
   /* Net::SMB::Error */
   rb_eSMBError = rb_define_class_under(rb_cSMB, "Error", rb_eStandardError);
