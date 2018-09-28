@@ -537,5 +537,8 @@ class SMBTest < Test::Unit::TestCase
   end ## test_file_write_random
 end
 
+  def test_smb_setxattr
+    ##FIXME
+  end ## test_smb_setxattr
 end
 
